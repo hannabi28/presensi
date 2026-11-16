@@ -25,7 +25,7 @@ function doPost(event) {
     const sheet = getSheet();
     const photoUrl = savePhoto(data.photo, data.name);
 
-    sheet.appendRow([
+    const row = [
       data.id || new Date().getTime(),
       data.date || '',
       data.dateLabel || '',
@@ -38,9 +38,12 @@ function doPost(event) {
       data.location ? JSON.stringify(data.location) : '',
       photoUrl,
       data.createdAt || new Date().toISOString()
-    ]);
+    ];
+    const rowNumber = sheet.getLastRow() + 1;
+    sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
+    SpreadsheetApp.flush();
 
-    return json({ ok: true, message: 'Absensi berhasil disimpan' });
+    return json({ ok: true, row: rowNumber, message: 'Absensi berhasil disimpan' });
   } catch (error) {
     return json({ ok: false, message: error.message });
   }
