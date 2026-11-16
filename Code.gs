@@ -83,16 +83,16 @@ function savePhoto(photoData, name) {
   );
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return `https://drive.google.com/uc?export=view&id=${file.getId()}`;
+  return `https://drive.google.com/thumbnail?id=${file.getId()}&sz=w1600`;
 }
 
 function normalizePhotoUrl(url) {
   if (!url) return '';
   const value = String(url);
-  if (value.includes('uc?export=view')) return value;
+  if (value.includes('drive.google.com/thumbnail')) return value;
 
   const match = value.match(/\/file\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
-  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : value;
+  return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600` : value;
 }
 
 function json(value) {
