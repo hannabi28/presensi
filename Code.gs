@@ -11,7 +11,10 @@ function doGet() {
   const records = values.map(row => headers.reduce((record, header, index) => {
     record[header] = row[index];
     return record;
-  }, {}));
+  }, {})).map(record => {
+    record.photo = normalizePhotoUrl(record.photo);
+    return record;
+  });
 
   return json({ ok: true, records: records });
 }
@@ -80,7 +83,16 @@ function savePhoto(photoData, name) {
   );
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file.getUrl();
+  return `https://drive.google.com/uc?export=view&id=${file.getId()}`;
+}
+
+function normalizePhotoUrl(url) {
+  if (!url) return '';
+  const value = String(url);
+  if (value.includes('uc?export=view')) return value;
+
+  const match = value.match(/\/file\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
+  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : value;
 }
 
 function json(value) {
