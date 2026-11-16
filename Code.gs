@@ -1,4 +1,4 @@
-const SPREADSHEET_ID = 'ISI_ID_GOOGLE_SHEET_DI_SINI';
+const SPREADSHEET_ID = '14OYCL9z0EswoIT_ma1YjvoTx5ffZtOAgVSEjHCsNa6s';
 const SHEET_NAME = 'Absensi';
 const DRIVE_FOLDER_ID = '1BjfDVr13USBx6qh4_gXffxy79UKWlIlh';
 
