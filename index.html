@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Absensi Magang/PKL</title>
+  <style>
+    :root{--blue:#07529a;--blue-dark:#073b72;--yellow:#f4c51b;--ink:#12233d;--muted:#6d7f99;--line:#dbe5f1;--bg:#edf5ff;--danger:#d73d4f}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:linear-gradient(120deg,#063d76,#087be5);min-height:100vh}
+    header{height:92px;background:var(--yellow);display:flex;align-items:center;padding:0 max(24px,calc((100% - 1120px)/2));gap:18px}
+    header img{width:128px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:5px}header h1{font-size:21px;margin:0;color:#073b72}header p{font-size:13px;margin:5px 0 0;color:#273d5d}
+    main{max-width:1120px;margin:38px auto;padding:0 20px 50px}.card{background:#fff;border-radius:20px;box-shadow:0 12px 35px #032d5b35;overflow:hidden}
+    .intro{padding:27px 32px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:15px}.intro .icon{background:#fff5cb;border-radius:50%;font-size:22px;padding:11px}.intro h2{margin:0;font-size:19px}.intro p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    form{padding:28px 32px}.layout{display:grid;grid-template-columns:1fr 330px;gap:30px}.fields{display:grid;gap:18px}.field label{display:block;font-size:13px;font-weight:700;color:#5e789b;margin-bottom:8px}.required{color:var(--danger)}
+    input,select,textarea{width:100%;border:1px solid var(--line);background:#f8fbff;border-radius:10px;padding:13px 14px;font:inherit;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:#1681ef;box-shadow:0 0 0 3px #1681ef1c}textarea{min-height:105px;resize:vertical}
+    .photo-box{border:1px solid var(--line);border-radius:16px;padding:17px;background:#fbfdff}.photo-title{font-size:13px;font-weight:700;color:#6782a4;margin-bottom:12px}.preview{aspect-ratio:16/9;width:100%;border-radius:10px;border:1px dashed #b9c9dc;background:#f3f7fc;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#a6b8ce;text-align:center}.preview span{padding:15px}.preview img,.preview video{width:100%;height:100%;object-fit:contain}.photo-actions{display:flex;gap:9px;margin-top:13px}.photo-actions button,.photo-actions label{flex:1;text-align:center;cursor:pointer;border:0;border-radius:9px;padding:11px 8px;font-weight:700;font-size:12px;background:#eaf3fd;color:#0876e2}.photo-actions label{background:#ffdf72;color:#665000}.photo-actions input{display:none}.watermark-note{font-size:11px;color:var(--muted);margin:10px 0 0;line-height:1.45}
+    .conditional{display:none}.conditional.visible{display:block}.submit-row{display:flex;justify-content:flex-end;margin-top:27px}.submit{background:var(--yellow);border:0;border-radius:10px;padding:14px 28px;color:#0a2e58;font-weight:800;font-size:14px;cursor:pointer}.submit:hover{filter:brightness(.96)}.notice{display:none;margin:0 32px 25px;padding:13px 16px;border-radius:10px;background:#e8f8ee;color:#17733a;font-size:13px}.notice.show{display:block}
+    @media(max-width:760px){header{height:auto;padding:16px 20px}header img{width:105px;height:48px}header h1{font-size:16px}.layout{grid-template-columns:1fr}.intro,form{padding:22px}.notice{margin:0 22px 22px}.submit-row{justify-content:stretch}.submit{width:100%}}
+  </style>
+</head>
+<body>
+  <header><img src="logo.png" alt="Logo Komdigi"><div><h1>ABSENSI MAGANG / PKL</h1><p>Formulir kehadiran peserta magang</p></div></header>
+  <main>
+    <section class="card">
+      <div class="intro"><span class="icon">📝</span><div><h2>Formulir Absensi</h2><p>Isi data kehadiran Anda dengan lengkap dan benar</p></div></div>
+      <div id="notice" class="notice" role="status">Absensi berhasil disimpan.</div>
+      <form id="attendanceForm">
+        <div class="layout">
+          <div class="fields">
+            <div class="field"><label for="name">Nama <span class="required">*</span></label><input id="name" name="name" required placeholder="Masukkan nama lengkap"></div>
+            <div class="field"><label for="department">Jurusan / Fakultas / Prodi <span class="required">*</span></label><input id="department" name="department" required placeholder="Contoh: Teknik Informatika"></div>
+            <div class="field"><label for="attendanceType">Jenis Absensi <span class="required">*</span></label><select id="attendanceType" name="attendanceType" required><option value="">Pilih jenis absensi</option><option value="Datang">Absen Datang</option><option value="Pulang">Absen Pulang</option></select></div>
+            <div class="field"><label for="status">Keterangan <span class="required">*</span></label><select id="status" name="status" required><option value="">Pilih keterangan</option><option>Hadir</option><option>Tidak Hadir</option><option>Ijin</option><option>Terlambat</option></select></div>
+            <div id="arrivalWrap" class="field conditional"><label id="timeLabel" for="arrival">Jam kedatangan <span class="required">*</span></label><input id="arrival" name="arrival" type="time"></div>
+            <div id="reasonWrap" class="field conditional"><label for="reason">Alasan <span class="required">*</span></label><textarea id="reason" name="reason" placeholder="Tuliskan alasan ketidakhadiran atau keterlambatan"></textarea></div>
+            <div class="field"><label>Tanggal absensi</label><input id="today" type="text" readonly></div>
+          </div>
+          <div class="photo-box">
+            <div class="photo-title">📷 Dokumentasi <span class="required">*</span></div>
+            <div id="preview" class="preview"><span id="previewMessage">Foto wajib diunggah atau diambil melalui kamera.</span><img id="photoPreview" hidden alt="Dokumentasi dengan watermark"><video id="camera" hidden autoplay playsinline></video></div>
+            <div class="photo-actions"><button type="button" id="cameraBtn">▣ Buka Kamera</button><label for="photo">Ambil / Pilih Foto<input id="photo" type="file" accept="image/*" capture="environment"></label></div>
+            <p class="watermark-note">Foto akan disimpan dengan watermark tanggal dan waktu pengambilan. Dokumentasi wajib diisi.</p>
+            <button type="button" id="captureBtn" hidden class="submit" style="width:100%;margin-top:10px">Ambil Foto dari Kamera</button>
+          </div>
+        </div>
+        <div class="submit-row"><button class="submit" type="submit">➤ Simpan Absensi</button></div>
+      </form>
+    </section>
+  </main>
+  <script>
+    const form=document.getElementById('attendanceForm'), attendanceType=document.getElementById('attendanceType'), status=document.getElementById('status'), arrivalWrap=document.getElementById('arrivalWrap'), reasonWrap=document.getElementById('reasonWrap'), timeLabel=document.getElementById('timeLabel'), arrival=document.getElementById('arrival'), reason=document.getElementById('reason'), preview=document.getElementById('preview'), previewMessage=document.getElementById('previewMessage'), photoPreview=document.getElementById('photoPreview'), photo=document.getElementById('photo'), today=document.getElementById('today');
+    let photoData=''; let locationData=null; let stream=null;
+    const pad=n=>String(n).padStart(2,'0');
+    function witaNow(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Makassar',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23',weekday:'long'}).formatToParts(new Date()).reduce((all,p)=>{all[p.type]=p.value;return all},{});return{date:`${parts.year}-${parts.month}-${parts.day}`,time:`${parts.hour}:${parts.minute}`,day:parts.weekday,label:new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:00+08:00`).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}}
+    function cutoffFor(day){return day==='Monday'?'07:30':day==='Tuesday'||day==='Wednesday'||day==='Thursday'?'08:30':'23:59'}
+    function isAfter(time,limit){return time>limit}
+    function refreshDate(){today.value=witaNow().label}
+    refreshDate();
+    function updateFields(){const type=attendanceType.value; const value=status.value; const isPulang=type==='Pulang'; const hadir=value==='Hadir'; const needsReason=!isPulang&&['Tidak Hadir','Ijin','Terlambat'].includes(value); arrivalWrap.classList.toggle('visible',isPulang||hadir); reasonWrap.classList.toggle('visible',needsReason); arrival.required=isPulang||hadir; arrival.readOnly=isPulang||hadir; if(isPulang||hadir) arrival.value=witaNow().time; reason.required=needsReason; status.disabled=isPulang; if(isPulang){status.value='Hadir';timeLabel.innerHTML='Jam pulang <span class="required">*</span>'}else{timeLabel.innerHTML='Jam kedatangan <span class="required">*</span>';if(status.disabled)status.value=''} if(!isPulang&&!hadir){arrival.value='';arrival.readOnly=false} if(!needsReason) reason.value=''}
+    attendanceType.addEventListener('change',updateFields);
+    status.addEventListener('change',updateFields);
+    function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){resolve(null);return}navigator.geolocation.getCurrentPosition(position=>resolve({latitude:position.coords.latitude,longitude:position.coords.longitude}),()=>resolve(null),{enableHighAccuracy:true,maximumAge:0,timeout:7000})})}
+    function watermark(file,location){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=image.width;canvas.height=image.height;ctx.drawImage(image,0,0);const lines=[new Date().toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'medium'})];if(location)lines.push(`Lokasi: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`);const size=Math.max(16,Math.round(canvas.width/38));ctx.font=`700 ${size}px Arial`;const widths=lines.map(line=>ctx.measureText(line).width);const boxHeight=lines.length*size+24;const boxWidth=Math.max(...widths)+28;ctx.fillStyle='rgba(0,0,0,.58)';ctx.fillRect(18,canvas.height-boxHeight-18,boxWidth,boxHeight);ctx.fillStyle='#fff';lines.forEach((line,index)=>ctx.fillText(line,32,canvas.height-boxHeight+size-3+index*size));resolve(canvas.toDataURL('image/jpeg',.84))};image.onerror=reject;image.src=reader.result};reader.onerror=reject;reader.readAsDataURL(file)})}
+    async function prepareWatermark(file){locationData=await getLocation();return watermark(file,locationData)}
+    photo.addEventListener('change',async()=>{if(!photo.files[0])return;try{photoData=await prepareWatermark(photo.files[0]);photoPreview.src=photoData;photoPreview.hidden=false;previewMessage.hidden=true}catch(e){previewMessage.textContent='Foto tidak dapat diproses.'}});
+    const cameraBtn=document.getElementById('cameraBtn'),camera=document.getElementById('camera'),captureBtn=document.getElementById('captureBtn');
+    cameraBtn.addEventListener('click',async()=>{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;camera.hidden=true;captureBtn.hidden=true;if(!photoData){previewMessage.hidden=false}cameraBtn.textContent='▣ Buka Kamera';return}try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});camera.srcObject=stream;previewMessage.hidden=true;photoPreview.hidden=true;camera.hidden=false;captureBtn.hidden=false;cameraBtn.textContent='Tutup Kamera'}catch(e){alert('Kamera tidak dapat diakses. Silakan pilih foto dari perangkat.')}});
+    captureBtn.addEventListener('click',()=>{const canvas=document.createElement('canvas');canvas.width=camera.videoWidth;canvas.height=camera.videoHeight;canvas.getContext('2d').drawImage(camera,0,0);canvas.toBlob(async blob=>{photoData=await prepareWatermark(new File([blob],'camera.jpg',{type:'image/jpeg'}));photoPreview.src=photoData;photoPreview.hidden=false;camera.hidden=true;captureBtn.hidden=true;previewMessage.hidden=true},'image/jpeg')});
+    form.addEventListener('submit',e=>{e.preventDefault();if(!photoData){alert('Dokumentasi foto wajib diisi.');return}const current=witaNow(),enteredTime=current.time,cutoff=cutoffFor(current.day);let recordStatus=status.value;if(attendanceType.value==='Datang'&&status.value==='Hadir'&&isAfter(enteredTime,cutoff))recordStatus='Hadir Terlambat';if(attendanceType.value==='Pulang')recordStatus=enteredTime==='00:00'||enteredTime<='00:59'?'Terlambat Pulang':'Hadir Pulang';const records=JSON.parse(localStorage.getItem('presensiRecords')||'[]');records.push({id:Date.now(),date:current.date,dateLabel:current.label,name:document.getElementById('name').value.trim(),department:document.getElementById('department').value.trim(),attendanceType:attendanceType.value,status:recordStatus,arrival:enteredTime,reason:reason.value.trim(),photo:photoData,location:locationData,createdAt:new Date().toISOString()});localStorage.setItem('presensiRecords',JSON.stringify(records));form.reset();status.disabled=false;photoData='';locationData=null;photoPreview.src='';photoPreview.hidden=true;camera.hidden=true;previewMessage.hidden=false;previewMessage.textContent='Foto wajib diunggah atau diambil melalui kamera.';refreshDate();updateFields();document.getElementById('notice').textContent=`Absensi ${recordStatus} berhasil disimpan.`;document.getElementById('notice').classList.add('show');setTimeout(()=>document.getElementById('notice').classList.remove('show'),4000)});
+  </script>
+</body>
+</html>
