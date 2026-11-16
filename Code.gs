@@ -2,6 +2,12 @@ const SPREADSHEET_ID = '14OYCL9z0EswoIT_ma1YjvoTx5ffZtOAgVSEjHCsNa6s';
 const SHEET_NAME = 'Absensi';
 const DRIVE_FOLDER_ID = '1BjfDVr13USBx6qh4_gXffxy79UKWlIlh';
 
+function authorizeServices() {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getName();
+  DriveApp.getFolderById(DRIVE_FOLDER_ID).getName();
+  return 'Spreadsheet dan Google Drive siap digunakan';
+}
+
 function doGet() {
   const sheet = getSheet();
   const values = sheet.getDataRange().getValues();
