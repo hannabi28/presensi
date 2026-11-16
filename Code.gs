@@ -27,12 +27,14 @@ function doGet() {
 
 function doPost(event) {
   let rowNumber = 0;
+  let rowWritten = false;
   try {
     const data = JSON.parse(event.postData.contents);
     const sheet = getSheet();
+    const id = data.id || new Date().getTime();
 
     const row = [
-      data.id || new Date().getTime(),
+      id,
       data.date || '',
       data.dateLabel || '',
       data.name || '',
@@ -45,9 +47,14 @@ function doPost(event) {
       '',
       data.createdAt || new Date().toISOString()
     ];
-    rowNumber = sheet.getLastRow() + 1;
+    const lastRow = sheet.getLastRow();
+    const existing = lastRow > 1
+      ? sheet.getRange(2, 1, lastRow - 1, 1).createTextFinder(String(id)).matchEntireCell(true).findNext()
+      : null;
+    rowNumber = existing ? existing.getRow() : lastRow + 1;
     sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
+    rowWritten = true;
 
     const photoUrl = savePhoto(data.photo, data.name);
     if (!photoUrl) throw new Error('Foto tidak valid atau gagal disimpan ke Google Drive');
@@ -56,7 +63,7 @@ function doPost(event) {
 
     return json({ ok: true, row: rowNumber, message: 'Absensi berhasil disimpan' });
   } catch (error) {
-    if (rowNumber) {
+    if (rowWritten) {
       return json({ ok: false, row: rowNumber, message: `Data absensi tersimpan di spreadsheet (baris ${rowNumber}), tetapi foto gagal disimpan: ${error.message}` });
     }
     return json({ ok: false, message: error.message });
