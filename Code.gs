@@ -1,6 +1,6 @@
 const SPREADSHEET_ID = 'ISI_ID_GOOGLE_SHEET_DI_SINI';
 const SHEET_NAME = 'Absensi';
-const DRIVE_FOLDER_ID = '';
+const DRIVE_FOLDER_ID = '1BjfDVr13USBx6qh4_gXffxy79UKWlIlh';
 
 function doGet() {
   const sheet = getSheet();
