@@ -14,25 +14,15 @@ function doGet() {
   if (values.length <= 1) return json({ ok: true, records: [] });
 
   const headers = values.shift();
-  const records = values.map((row, index) => {
-    const record = headers.reduce((item, header, column) => {
-      item[header] = row[column];
-      return item;
-    }, {});
+  const records = values.map(row => headers.reduce((record, header, index) => {
+    record[header] = row[index];
+    return record;
+  }, {})).map(record => {
     record.photo = normalizePhotoUrl(record.photo);
-    record._row = index + 2;
-    record._deleteToken = deleteToken(record._row, row);
     return record;
   });
 
   return json({ ok: true, records: records });
-}
-
-function deleteToken(rowNumber, row) {
-  const values = row.map(value => value instanceof Date ? value.toISOString() : value);
-  const payload = `${rowNumber}:${JSON.stringify(values)}`;
-  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, payload);
-  return Utilities.base64EncodeWebSafe(digest);
 }
 
 function doPost(event) {
@@ -40,7 +30,6 @@ function doPost(event) {
   let rowWritten = false;
   try {
     const data = JSON.parse(event.postData.contents);
-    if (data.action === 'adminDeleteMany') return adminDeleteMany(data);
     const sheet = getSheet();
     const id = data.id || new Date().getTime();
 
@@ -91,74 +80,6 @@ function doPost(event) {
     }
     return json({ ok: false, message: error.message });
   }
-}
-
-function adminDeleteMany(data) {
-  const expectedPassword = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
-  if (!expectedPassword) throw new Error('ADMIN_PASSWORD belum dikonfigurasi di Script Properties Apps Script.');
-  if (String(data.password || '') !== expectedPassword) throw new Error('Password admin salah.');
-
-  let selections = Array.isArray(data.records) ? data.records : [];
-  const legacyIds = Array.isArray(data.ids) ? data.ids.map(id => String(id)) : [];
-  if (!selections.length && !legacyIds.length) throw new Error('Pilih setidaknya satu data absensi.');
-
-  const sheet = getSheet();
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) throw new Error('Tidak ada data absensi untuk dihapus.');
-
-  const sheetRows = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
-  if (!selections.length) {
-    if (legacyIds.some(id => !id.trim()) || new Set(legacyIds).size !== legacyIds.length) {
-      throw new Error('Pilihan dari dashboard lama tidak valid. Muat ulang dashboard sebelum menghapus.');
-    }
-    selections = legacyIds.map(id => {
-      const matches = [];
-      sheetRows.forEach((row, index) => {
-        if (String(row[0] == null ? '' : row[0]) === id) matches.push(index + 2);
-      });
-      if (matches.length !== 1) {
-        throw new Error('Perbarui dashboard untuk menghapus data dengan ID yang sama atau tidak unik.');
-      }
-      const row = matches[0];
-      return { row: row, token: deleteToken(row, sheetRows[row - 2]) };
-    });
-  }
-
-  const rows = selections.map(selection => ({
-    row: Number(selection.row),
-    token: String(selection.token || '')
-  }));
-  if (rows.some(selection => !Number.isInteger(selection.row) || selection.row < 2 || selection.row > lastRow || !selection.token)) {
-    throw new Error('Data yang dipilih tidak valid. Muat ulang dashboard sebelum menghapus.');
-  }
-  if (new Set(rows.map(selection => selection.row)).size !== rows.length) {
-    throw new Error('Daftar data yang dipilih tidak valid.');
-  }
-
-  rows.forEach(selection => {
-    const currentRow = sheetRows[selection.row - 2];
-    if (!currentRow || deleteToken(selection.row, currentRow) !== selection.token) {
-      throw new Error('Data berubah sejak dashboard dimuat. Muat ulang dashboard lalu pilih ulang sebelum menghapus.');
-    }
-  });
-
-  const rowNumbers = rows.map(selection => selection.row).sort((a, b) => b - a);
-  let groupTop = rowNumbers[0];
-  let groupBottom = rowNumbers[0];
-  for (let index = 1; index <= rowNumbers.length; index += 1) {
-    const row = rowNumbers[index];
-    if (row !== undefined && row === groupBottom - 1) {
-      groupBottom = row;
-      continue;
-    }
-    sheet.deleteRows(groupBottom, groupTop - groupBottom + 1);
-    if (row !== undefined) {
-      groupTop = row;
-      groupBottom = row;
-    }
-  }
-  SpreadsheetApp.flush();
-  return json({ ok: true, deleted: rows.length });
 }
 
 function getSheet() {
