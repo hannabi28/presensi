@@ -33,13 +33,14 @@
             <div class="field"><label for="status">Keterangan <span class="required">*</span></label><select id="status" name="status" required><option value="">Pilih keterangan</option><option>Hadir</option><option>Tidak Hadir</option><option>Ijin</option><option>Terlambat</option></select></div>
             <div id="arrivalWrap" class="field conditional"><label id="timeLabel" for="arrival">Jam kedatangan <span class="required">*</span></label><input id="arrival" name="arrival" type="time"></div>
             <div id="reasonWrap" class="field conditional"><label for="reason">Alasan <span class="required">*</span></label><textarea id="reason" name="reason" placeholder="Tuliskan alasan ketidakhadiran atau keterlambatan"></textarea></div>
+            <div id="proofWrap" class="field conditional"><label for="proof">Bukti surat dokter <span class="required">*</span></label><input id="proof" name="proof" type="file" accept="image/*,.pdf,application/pdf"><small class="photo-note">Wajib diunggah jika alasan izin adalah sakit. Format PDF atau gambar, maksimal 10 MB.</small></div>
             <div class="field"><label>Tanggal absensi</label><input id="today" type="text" readonly></div>
           </div>
           <div class="photo-box">
             <div class="photo-title">📷 Dokumentasi <span class="required">*</span></div>
             <div id="preview" class="preview"><span id="previewMessage">Foto wajib diunggah atau diambil melalui kamera.</span><img id="photoPreview" hidden alt="Pratinjau dokumentasi absensi"><video id="camera" hidden autoplay playsinline></video></div>
             <div class="photo-actions"><button type="button" id="cameraBtn">▣ Buka Kamera</button><label for="photo">Ambil / Pilih Foto<input id="photo" type="file" accept="image/*" capture="environment"></label></div>
-            <p class="photo-note">Foto disimpan tanpa watermark. Waktu dan lokasi tetap dicatat pada data absensi. Dokumentasi wajib diisi.</p>
+            <p class="photo-note">Foto dilengkapi watermark waktu dan lokasi. Dokumentasi wajib diisi.</p>
             <button type="button" id="captureBtn" hidden class="submit" style="width:100%;margin-top:10px">Ambil Foto dari Kamera</button>
           </div>
         </div>
@@ -49,17 +50,21 @@
   </main>
   <script>
     const API_URL='https://script.google.com/macros/s/AKfycbxv4WVmOSi1pYUwBWd1-SeLT6a14UyvsrgH1B2HR95T5Doq4nz5HHe_RznDMthUX6YDOA/exec';
-    const form=document.getElementById('attendanceForm'), attendanceType=document.getElementById('attendanceType'), status=document.getElementById('status'), arrivalWrap=document.getElementById('arrivalWrap'), reasonWrap=document.getElementById('reasonWrap'), timeLabel=document.getElementById('timeLabel'), arrival=document.getElementById('arrival'), reason=document.getElementById('reason'), preview=document.getElementById('preview'), previewMessage=document.getElementById('previewMessage'), photoPreview=document.getElementById('photoPreview'), photo=document.getElementById('photo'), today=document.getElementById('today');
-    let photoData=''; let locationData=null; let stream=null;
+    const form=document.getElementById('attendanceForm'), attendanceType=document.getElementById('attendanceType'), status=document.getElementById('status'), arrivalWrap=document.getElementById('arrivalWrap'), reasonWrap=document.getElementById('reasonWrap'), proofWrap=document.getElementById('proofWrap'), proofFile=document.getElementById('proof'), timeLabel=document.getElementById('timeLabel'), arrival=document.getElementById('arrival'), reason=document.getElementById('reason'), preview=document.getElementById('preview'), previewMessage=document.getElementById('previewMessage'), photoPreview=document.getElementById('photoPreview'), photo=document.getElementById('photo'), today=document.getElementById('today');
+    let photoData=''; let locationData=null; let stream=null; let proofData=null; let proofLoading=false; let proofReadToken=0;
     const pad=n=>String(n).padStart(2,'0');
     function witaNow(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Makassar',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23',weekday:'long'}).formatToParts(new Date()).reduce((all,p)=>{all[p.type]=p.value;return all},{});return{date:`${parts.year}-${parts.month}-${parts.day}`,time:`${parts.hour}:${parts.minute}`,day:parts.weekday,label:new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:00+08:00`).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}}
-    function cutoffFor(day){return day==='Monday'?'07:30':day==='Tuesday'||day==='Wednesday'||day==='Thursday'?'08:30':'23:59'}
+    function cutoffFor(day){return day==='Monday'?'07:30':day==='Tuesday'||day==='Wednesday'||day==='Thursday'?'08:00':'23:59'}
     function isAfter(time,limit){return time>limit}
     function refreshDate(){today.value=witaNow().label}
     refreshDate();
-    function updateFields(){const type=attendanceType.value; const value=status.value; const isPulang=type==='Pulang'; const hadir=value==='Hadir'; const needsReason=!isPulang&&['Tidak Hadir','Ijin','Terlambat'].includes(value); arrivalWrap.classList.toggle('visible',isPulang||hadir); reasonWrap.classList.toggle('visible',needsReason); arrival.required=isPulang||hadir; arrival.readOnly=isPulang||hadir; if(isPulang||hadir) arrival.value=witaNow().time; reason.required=needsReason; status.disabled=isPulang; if(isPulang){status.value='Hadir';timeLabel.innerHTML='Jam pulang <span class="required">*</span>'}else{timeLabel.innerHTML='Jam kedatangan <span class="required">*</span>';if(status.disabled)status.value=''} if(!isPulang&&!hadir){arrival.value='';arrival.readOnly=false} if(!needsReason) reason.value=''}
+    function needsMedicalProof(value){return status.value==='Ijin'&&/\bsakit\b/i.test(value||'')}
+    function clearProof(){proofReadToken++;proofData=null;proofLoading=false;proofFile.value=''}
+    function updateFields(){const type=attendanceType.value;const value=status.value;const isPulang=type==='Pulang';const hadir=value==='Hadir';const needsReason=!isPulang&&['Tidak Hadir','Ijin','Terlambat'].includes(value);arrivalWrap.classList.toggle('visible',isPulang||hadir);reasonWrap.classList.toggle('visible',needsReason);arrival.required=isPulang||hadir;arrival.readOnly=isPulang||hadir;if(isPulang||hadir)arrival.value=witaNow().time;reason.required=needsReason;status.disabled=isPulang;if(isPulang){status.value='Hadir';timeLabel.innerHTML='Jam pulang <span class="required">*</span>'}else{timeLabel.innerHTML='Jam kedatangan <span class="required">*</span>';if(status.disabled)status.value=''}if(!isPulang&&!hadir){arrival.value='';arrival.readOnly=false}if(!needsReason)reason.value='';const needsProof=needsMedicalProof(reason.value);proofWrap.classList.toggle('visible',needsProof);proofFile.required=needsProof;if(!needsProof&&(proofData||proofLoading||proofFile.value))clearProof()}
     attendanceType.addEventListener('change',updateFields);
     status.addEventListener('change',updateFields);
+    reason.addEventListener('input',updateFields);
+    proofFile.addEventListener('change',()=>{const file=proofFile.files[0];proofData=null;proofReadToken++;const token=proofReadToken;if(!file){proofLoading=false;return}const extension=file.name.toLowerCase().split('.').pop(),inferredType={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',heic:'image/heic'}[extension]||'',mimeType=file.type||inferredType;if(file.size>10*1024*1024){proofFile.value='';proofLoading=false;showNotice('Ukuran bukti surat maksimal 10 MB.',true);return}if(mimeType!=='application/pdf'&&!mimeType.startsWith('image/')){proofFile.value='';proofLoading=false;showNotice('Bukti harus berupa file PDF atau gambar.',true);return}proofLoading=true;const reader=new FileReader();reader.onload=()=>{if(token!==proofReadToken)return;proofData={name:file.name,mimeType:mimeType,data:String(reader.result)};proofLoading=false};reader.onerror=()=>{if(token!==proofReadToken)return;proofLoading=false;proofFile.value='';showNotice('File bukti tidak dapat dibaca. Silakan pilih ulang.',true)};reader.readAsDataURL(file)});
     function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){resolve(null);return}navigator.geolocation.getCurrentPosition(position=>resolve({latitude:position.coords.latitude,longitude:position.coords.longitude}),()=>resolve(null),{enableHighAccuracy:true,maximumAge:0,timeout:7000})})}
     async function locationAddress(location){if(!location)return null;try{const response=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${location.latitude}&lon=${location.longitude}&zoom=18&addressdetails=1`,{headers:{Accept:'application/json'}});if(!response.ok)return location;const result=await response.json(),address=result.address||{},parts=[address.road&&`${address.road}${address.house_number?` No. ${address.house_number}`:''}`,address.village||address.town||address.city_district||address.suburb,address.city||address.municipality||address.county,address.state].filter(Boolean);return{...location,label:parts.join(', ')||result.display_name||''}}catch(error){return location}}
     function drawWatermark(context,canvas,location,capturedAt){
@@ -87,15 +92,16 @@
     const notice=document.getElementById('notice'),submitButton=form.querySelector('button[type="submit"]');
     let pendingRecordId=null;
     function showNotice(message,warning){notice.textContent=message;notice.classList.toggle('warning',warning);notice.classList.add('show')}
-    function resetAttendanceForm(){form.reset();status.disabled=false;photoData='';locationData=null;photoPreview.src='';photoPreview.hidden=true;if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;camera.srcObject=null;cameraBtn.textContent='▣ Buka Kamera'}camera.hidden=true;captureBtn.hidden=true;previewMessage.hidden=false;previewMessage.textContent='Foto wajib diunggah atau diambil melalui kamera.';refreshDate();updateFields()}
+    function resetAttendanceForm(){clearProof();form.reset();status.disabled=false;photoData='';locationData=null;photoPreview.src='';photoPreview.hidden=true;if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;camera.srcObject=null;cameraBtn.textContent='▣ Buka Kamera'}camera.hidden=true;captureBtn.hidden=true;previewMessage.hidden=false;previewMessage.textContent='Foto wajib diunggah atau diambil melalui kamera.';refreshDate();updateFields()}
     form.addEventListener('submit',async e=>{
       e.preventDefault();
       if(!photoData){showNotice('Dokumentasi foto wajib diisi.',true);return}
+      if(needsMedicalProof(reason.value)){if(proofLoading){showNotice('Tunggu sampai file bukti selesai dibaca.',true);return}if(!proofData){showNotice('Unggah surat dokter sebagai bukti izin sakit.',true);return}}
       const current=witaNow(),enteredTime=current.time,cutoff=cutoffFor(current.day);
       let recordStatus=status.value;
       if(attendanceType.value==='Datang'&&status.value==='Hadir'&&isAfter(enteredTime,cutoff))recordStatus='Hadir Terlambat';
       if(attendanceType.value==='Pulang')recordStatus=enteredTime==='00:00'||enteredTime<='00:59'?'Terlambat Pulang':'Hadir Pulang';
-      const record={id:pendingRecordId||(pendingRecordId=Date.now()),date:current.date,dateLabel:current.label,name:document.getElementById('name').value.trim(),department:document.getElementById('department').value.trim(),attendanceType:attendanceType.value,status:recordStatus,arrival:enteredTime,reason:reason.value.trim(),photo:photoData,location:locationData,createdAt:new Date().toISOString()};
+      const record={id:pendingRecordId||(pendingRecordId=Date.now()),date:current.date,dateLabel:current.label,name:document.getElementById('name').value.trim(),department:document.getElementById('department').value.trim(),attendanceType:attendanceType.value,status:recordStatus,arrival:enteredTime,reason:reason.value.trim(),photo:photoData,proof:needsMedicalProof(reason.value)?proofData:null,location:locationData,createdAt:new Date().toISOString()};
       const originalLabel=submitButton.textContent;
       submitButton.disabled=true;
       submitButton.textContent='Menyimpan...';
@@ -104,7 +110,7 @@
         const result=await response.json();
         if(!response.ok)throw new Error(result.message||'Server menolak data absensi');
         if(!result.ok){
-          if(result.row)showNotice(`${result.message}. Setelah admin memperbaiki akses Google Drive, klik simpan lagi untuk melengkapi foto; sistem akan memperbarui baris yang sama.`,true);
+          if(result.row)showNotice(`${result.message}. Periksa akses Google Drive, lalu klik simpan lagi; sistem akan memperbarui baris yang sama.`,true);
           else throw new Error(result.message||'Server menolak data absensi');
           return;
         }
