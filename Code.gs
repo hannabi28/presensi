@@ -43,7 +43,7 @@ function doPost(event) {
       data.status || '',
       data.arrival || '',
       data.reason || '',
-      data.location ? JSON.stringify(data.location) : '',
+      formatLocation(data.location),
       '',
       data.createdAt || new Date().toISOString()
     ];
@@ -52,14 +52,26 @@ function doPost(event) {
       ? sheet.getRange(2, 1, lastRow - 1, 1).createTextFinder(String(id)).matchEntireCell(true).findNext()
       : null;
     rowNumber = existing ? existing.getRow() : lastRow + 1;
+    if (existing) row[10] = sheet.getRange(rowNumber, 11).getValue();
     sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
     rowWritten = true;
 
-    const photoUrl = savePhoto(data.photo, data.name);
-    if (!photoUrl) throw new Error('Foto tidak valid atau gagal disimpan ke Google Drive');
-    sheet.getRange(rowNumber, 11).setValue(photoUrl);
+    const photo = savePhoto(data.photo, data.name);
+    if (!photo.url) throw new Error('Foto tidak valid atau gagal disimpan ke Google Drive');
+    sheet.getRange(rowNumber, 11).setValue(photo.url);
     SpreadsheetApp.flush();
+    if (sheet.getRange(rowNumber, 11).getValue() !== photo.url) {
+      throw new Error('Tautan foto tidak berhasil ditulis ke kolom K spreadsheet');
+    }
+
+    if (photo.sharingError) {
+      return json({
+        ok: true,
+        row: rowNumber,
+        warning: `Foto dan link sudah disimpan, tetapi izin berbagi Drive gagal: ${photo.sharingError}`
+      });
+    }
 
     return json({ ok: true, row: rowNumber, message: 'Absensi berhasil disimpan' });
   } catch (error) {
@@ -89,6 +101,17 @@ function getSheet() {
   return sheet;
 }
 
+function formatLocation(location) {
+  if (!location) return '';
+  const latitude = Number(location.latitude);
+  const longitude = Number(location.longitude);
+  const coordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
+    ? `Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+    : '';
+  const label = String(location.label || '').trim();
+  return [label, coordinates].filter(Boolean).join(' | ');
+}
+
 function savePhoto(photoData, name) {
   if (!photoData || !photoData.startsWith('data:image/')) return '';
 
@@ -106,8 +129,13 @@ function savePhoto(photoData, name) {
     `${safeName}-${new Date().getTime()}.${extension}`
   );
   const file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return `https://drive.google.com/thumbnail?id=${file.getId()}&sz=w1600`;
+  let sharingError = '';
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (error) {
+    sharingError = error.message;
+  }
+  return { url: file.getUrl(), sharingError: sharingError };
 }
 
 function normalizePhotoUrl(url) {
