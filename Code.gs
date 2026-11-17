@@ -30,13 +30,9 @@ function doPost(event) {
   let rowWritten = false;
   try {
     const data = JSON.parse(event.postData.contents);
+    if (data.action === 'adminDeleteMany') return adminDeleteMany(data);
     const sheet = getSheet();
-    const proofColumn = ensureProofColumn(sheet);
     const id = data.id || new Date().getTime();
-    const needsMedicalProof = data.status === 'Ijin' && /\bsakit\b/i.test(String(data.reason || ''));
-    if (needsMedicalProof && (!data.proof || !data.proof.data)) {
-      throw new Error('Surat dokter wajib diunggah untuk izin sakit');
-    }
 
     const row = [
       id,
@@ -70,32 +66,69 @@ function doPost(event) {
       throw new Error('Tautan foto tidak berhasil ditulis ke kolom K spreadsheet');
     }
 
-    let proof = null;
-    if (data.proof) {
-      proof = saveProof(data.proof, data.name);
-      sheet.getRange(rowNumber, proofColumn).setValue(proof.url);
-      SpreadsheetApp.flush();
-      if (sheet.getRange(rowNumber, proofColumn).getValue() !== proof.url) {
-        throw new Error('Tautan bukti tidak berhasil ditulis ke spreadsheet');
-      }
-    }
-
-    const sharingErrors = [photo.sharingError, proof && proof.sharingError].filter(Boolean);
-    if (sharingErrors.length) {
+    if (photo.sharingError) {
       return json({
         ok: true,
         row: rowNumber,
-        warning: `File sudah disimpan, tetapi izin berbagi Drive gagal: ${sharingErrors.join('; ')}`
+        warning: `Foto dan link sudah disimpan, tetapi izin berbagi Drive gagal: ${photo.sharingError}`
       });
     }
 
     return json({ ok: true, row: rowNumber, message: 'Absensi berhasil disimpan' });
   } catch (error) {
     if (rowWritten) {
-      return json({ ok: false, row: rowNumber, message: `Data absensi tersimpan di spreadsheet (baris ${rowNumber}), tetapi penyimpanan foto atau bukti gagal: ${error.message}` });
+      return json({ ok: false, row: rowNumber, message: `Data absensi tersimpan di spreadsheet (baris ${rowNumber}), tetapi foto gagal disimpan: ${error.message}` });
     }
     return json({ ok: false, message: error.message });
   }
+}
+
+function adminDeleteMany(data) {
+  const expectedPassword = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
+  if (!expectedPassword) throw new Error('ADMIN_PASSWORD belum dikonfigurasi di Script Properties Apps Script.');
+  if (String(data.password || '') !== expectedPassword) throw new Error('Password admin salah.');
+
+  const ids = Array.isArray(data.ids) ? data.ids.map(id => String(id)) : [];
+  if (!ids.length || ids.some(id => !id.trim())) throw new Error('Pilih setidaknya satu data absensi yang memiliki ID.');
+  if (new Set(ids).size !== ids.length) throw new Error('Daftar data yang dipilih tidak valid.');
+
+  const sheet = getSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) throw new Error('Tidak ada data absensi untuk dihapus.');
+
+  const requestedIds = new Set(ids);
+  const matchingRows = new Map(ids.map(id => [id, []]));
+  sheet.getRange(2, 1, lastRow - 1, 1).getValues().forEach((row, index) => {
+    const id = String(row[0] == null ? '' : row[0]);
+    if (requestedIds.has(id)) matchingRows.get(id).push(index + 2);
+  });
+
+  const rows = [];
+  ids.forEach(id => {
+    const matches = matchingRows.get(id);
+    if (matches.length !== 1) {
+      throw new Error('Data yang dipilih tidak ditemukan atau ID-nya tidak unik. Muat ulang dashboard sebelum menghapus.');
+    }
+    rows.push(matches[0]);
+  });
+
+  rows.sort((a, b) => b - a);
+  let groupTop = rows[0];
+  let groupBottom = rows[0];
+  for (let index = 1; index <= rows.length; index += 1) {
+    const row = rows[index];
+    if (row !== undefined && row === groupBottom - 1) {
+      groupBottom = row;
+      continue;
+    }
+    sheet.deleteRows(groupBottom, groupTop - groupBottom + 1);
+    if (row !== undefined) {
+      groupTop = row;
+      groupBottom = row;
+    }
+  }
+  SpreadsheetApp.flush();
+  return json({ ok: true, deleted: ids.length });
 }
 
 function getSheet() {
@@ -110,23 +143,11 @@ function getSheet() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow([
       'id', 'date', 'dateLabel', 'name', 'department', 'attendanceType',
-      'status', 'arrival', 'reason', 'location', 'photo', 'createdAt', 'proof'
+      'status', 'arrival', 'reason', 'location', 'photo', 'createdAt'
     ]);
   }
 
-  ensureProofColumn(sheet);
   return sheet;
-}
-
-function ensureProofColumn(sheet) {
-  const lastColumn = Math.max(sheet.getLastColumn(), 1);
-  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
-  const existing = headers.indexOf('proof');
-  if (existing >= 0) return existing + 1;
-
-  const column = sheet.getLastColumn() + 1;
-  sheet.getRange(1, column).setValue('proof');
-  return column;
 }
 
 function formatLocation(location) {
@@ -164,30 +185,6 @@ function savePhoto(photoData, name) {
     sharingError = error.message;
   }
   return { url: file.getUrl(), sharingError: sharingError };
-}
-
-function saveProof(proofData, name) {
-  if (!proofData || typeof proofData.data !== 'string') {
-    throw new Error('Data bukti surat tidak valid');
-  }
-
-  const match = proofData.data.match(/^data:(application\/pdf|image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
-  if (!match) throw new Error('Bukti harus berupa file PDF atau gambar');
-
-  const safeName = String(name || 'peserta').replace(/[^\w-]+/g, '-');
-  const safeOriginalName = String(proofData.name || 'bukti')
-    .replace(/[^\w.-]+/g, '-')
-    .replace(/^\.+/, '');
-  const blob = Utilities.newBlob(
-    Utilities.base64Decode(match[2]),
-    match[1],
-    `${safeName}-bukti-${new Date().getTime()}-${safeOriginalName}`
-  );
-  const folder = DRIVE_FOLDER_ID
-    ? DriveApp.getFolderById(DRIVE_FOLDER_ID)
-    : DriveApp.getRootFolder();
-  const file = folder.createFile(blob);
-  return { url: file.getUrl() };
 }
 
 function normalizePhotoUrl(url) {
