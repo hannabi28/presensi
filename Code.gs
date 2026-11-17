@@ -26,10 +26,18 @@ function doGet() {
 }
 
 function doPost(event) {
+  let data;
+  try {
+    data = JSON.parse(event.postData.contents);
+  } catch (error) {
+    return json({ ok: false, message: `Data permintaan tidak valid: ${error.message}` });
+  }
+
+  if (data.action === 'delete') return deleteRecords(data);
+
   let rowNumber = 0;
   let rowWritten = false;
   try {
-    const data = JSON.parse(event.postData.contents);
     const sheet = getSheet();
     const id = data.id || new Date().getTime();
 
@@ -45,14 +53,18 @@ function doPost(event) {
       data.reason || '',
       formatLocation(data.location),
       '',
-      data.createdAt || new Date().toISOString()
+      data.createdAt || new Date().toISOString(),
+      ''
     ];
     const lastRow = sheet.getLastRow();
     const existing = lastRow > 1
       ? sheet.getRange(2, 1, lastRow - 1, 1).createTextFinder(String(id)).matchEntireCell(true).findNext()
       : null;
     rowNumber = existing ? existing.getRow() : lastRow + 1;
-    if (existing) row[10] = sheet.getRange(rowNumber, 11).getValue();
+    if (existing) {
+      row[10] = sheet.getRange(rowNumber, 11).getValue();
+      row[12] = sheet.getRange(rowNumber, 13).getValue();
+    }
     sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
     rowWritten = true;
@@ -63,6 +75,16 @@ function doPost(event) {
     SpreadsheetApp.flush();
     if (sheet.getRange(rowNumber, 11).getValue() !== photo.url) {
       throw new Error('Tautan foto tidak berhasil ditulis ke kolom K spreadsheet');
+    }
+
+    if (data.supportingDocument) {
+      const document = saveSupportingDocument(data.supportingDocument, data.supportingDocumentName, data.name);
+      if (!document.url) throw new Error('Bukti pendukung tidak valid atau gagal disimpan ke Google Drive');
+      sheet.getRange(rowNumber, 13).setValue(document.url);
+      SpreadsheetApp.flush();
+      if (sheet.getRange(rowNumber, 13).getValue() !== document.url) {
+        throw new Error('Tautan bukti pendukung tidak berhasil ditulis ke kolom M spreadsheet');
+      }
     }
 
     if (photo.sharingError) {
@@ -76,7 +98,7 @@ function doPost(event) {
     return json({ ok: true, row: rowNumber, message: 'Absensi berhasil disimpan' });
   } catch (error) {
     if (rowWritten) {
-      return json({ ok: false, row: rowNumber, message: `Data absensi tersimpan di spreadsheet (baris ${rowNumber}), tetapi foto gagal disimpan: ${error.message}` });
+      return json({ ok: false, row: rowNumber, message: `Data absensi tersimpan di spreadsheet (baris ${rowNumber}), tetapi foto atau bukti pendukung gagal disimpan: ${error.message}` });
     }
     return json({ ok: false, message: error.message });
   }
@@ -94,11 +116,46 @@ function getSheet() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow([
       'id', 'date', 'dateLabel', 'name', 'department', 'attendanceType',
-      'status', 'arrival', 'reason', 'location', 'photo', 'createdAt'
+      'status', 'arrival', 'reason', 'location', 'photo', 'createdAt', 'supportingDocument'
     ]);
+  } else {
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (headers.indexOf('supportingDocument') === -1) {
+      sheet.getRange(1, headers.length + 1).setValue('supportingDocument');
+    }
   }
 
   return sheet;
+}
+
+function deleteRecords(data) {
+  try {
+    const configuredToken = PropertiesService.getScriptProperties().getProperty('PRESENSI_DELETE_TOKEN');
+    if (!configuredToken) {
+      throw new Error('Token admin belum dikonfigurasi. Atur Script Property PRESENSI_DELETE_TOKEN terlebih dahulu.');
+    }
+    if (!data.adminToken || String(data.adminToken) !== configuredToken) {
+      throw new Error('Token admin tidak valid.');
+    }
+
+    const ids = Array.isArray(data.ids) ? data.ids.map(String).filter(Boolean) : [];
+    if (!ids.length) throw new Error('Pilih setidaknya satu data untuk dihapus.');
+
+    const sheet = getSheet();
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return json({ ok: true, deleted: 0 });
+
+    const idValues = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues();
+    const requestedIds = new Set(ids);
+    const rows = [];
+    idValues.forEach((value, index) => {
+      if (requestedIds.has(String(value[0]))) rows.push(index + 2);
+    });
+    rows.sort((a, b) => b - a).forEach(row => sheet.deleteRow(row));
+    return json({ ok: true, deleted: rows.length });
+  } catch (error) {
+    return json({ ok: false, message: error.message });
+  }
 }
 
 function formatLocation(location) {
@@ -136,6 +193,28 @@ function savePhoto(photoData, name) {
     sharingError = error.message;
   }
   return { url: file.getUrl(), sharingError: sharingError };
+}
+
+function saveSupportingDocument(dataUrl, fileName, name) {
+  const match = String(dataUrl || '').match(/^data:(application\/pdf|image\/(?:jpeg|png|webp));base64,([\s\S]+)$/);
+  if (!match) throw new Error('Bukti pendukung harus berupa PDF, JPEG, PNG, atau WEBP.');
+
+  const mimeType = match[1];
+  const content = Utilities.base64Decode(match[2]);
+  if (content.length > 5 * 1024 * 1024) throw new Error('Bukti pendukung tidak boleh lebih besar dari 5 MB.');
+  const extension = mimeType === 'application/pdf' ? 'pdf' : mimeType.split('/')[1].replace('jpeg', 'jpg');
+  const safeName = String(name || 'peserta').replace(/[^\w-]+/g, '-');
+  const safeFileName = String(fileName || 'bukti-pendukung').replace(/[^\w.-]+/g, '-');
+  const blob = Utilities.newBlob(
+    content,
+    mimeType,
+    `${safeName}-bukti-${new Date().getTime()}-${safeFileName || `dokumen.${extension}`}`
+  );
+  const folder = DRIVE_FOLDER_ID
+    ? DriveApp.getFolderById(DRIVE_FOLDER_ID)
+    : DriveApp.getRootFolder();
+  const file = folder.createFile(blob);
+  return { url: file.getUrl() };
 }
 
 function normalizePhotoUrl(url) {
