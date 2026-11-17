@@ -130,7 +130,7 @@ function getSheet() {
 
 function deleteRecords(data) {
   try {
-    const configuredToken = PropertiesService.getScriptProperties().getProperty('PRESENSI_DELETE_TOKEN');
+    const configuredToken = PropertiesService.getScriptProperties().getProperty('#Admin_Pr3s3ensi');
     if (!configuredToken) {
       throw new Error('Token admin belum dikonfigurasi. Atur Script Property PRESENSI_DELETE_TOKEN terlebih dahulu.');
     }
