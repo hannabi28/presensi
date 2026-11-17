@@ -14,15 +14,25 @@ function doGet() {
   if (values.length <= 1) return json({ ok: true, records: [] });
 
   const headers = values.shift();
-  const records = values.map(row => headers.reduce((record, header, index) => {
-    record[header] = row[index];
-    return record;
-  }, {})).map(record => {
+  const records = values.map((row, index) => {
+    const record = headers.reduce((item, header, column) => {
+      item[header] = row[column];
+      return item;
+    }, {});
     record.photo = normalizePhotoUrl(record.photo);
+    record._row = index + 2;
+    record._deleteToken = deleteToken(record._row, row);
     return record;
   });
 
   return json({ ok: true, records: records });
+}
+
+function deleteToken(rowNumber, row) {
+  const values = row.map(value => value instanceof Date ? value.toISOString() : value);
+  const payload = `${rowNumber}:${JSON.stringify(values)}`;
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, payload);
+  return Utilities.base64EncodeWebSafe(digest);
 }
 
 function doPost(event) {
@@ -88,35 +98,37 @@ function adminDeleteMany(data) {
   if (!expectedPassword) throw new Error('ADMIN_PASSWORD belum dikonfigurasi di Script Properties Apps Script.');
   if (String(data.password || '') !== expectedPassword) throw new Error('Password admin salah.');
 
-  const ids = Array.isArray(data.ids) ? data.ids.map(id => String(id)) : [];
-  if (!ids.length || ids.some(id => !id.trim())) throw new Error('Pilih setidaknya satu data absensi yang memiliki ID.');
-  if (new Set(ids).size !== ids.length) throw new Error('Daftar data yang dipilih tidak valid.');
+  const selections = Array.isArray(data.records) ? data.records : [];
+  if (!selections.length) throw new Error('Pilih setidaknya satu data absensi.');
 
   const sheet = getSheet();
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) throw new Error('Tidak ada data absensi untuk dihapus.');
 
-  const requestedIds = new Set(ids);
-  const matchingRows = new Map(ids.map(id => [id, []]));
-  sheet.getRange(2, 1, lastRow - 1, 1).getValues().forEach((row, index) => {
-    const id = String(row[0] == null ? '' : row[0]);
-    if (requestedIds.has(id)) matchingRows.get(id).push(index + 2);
-  });
+  const rows = selections.map(selection => ({
+    row: Number(selection.row),
+    token: String(selection.token || '')
+  }));
+  if (rows.some(selection => !Number.isInteger(selection.row) || selection.row < 2 || selection.row > lastRow || !selection.token)) {
+    throw new Error('Data yang dipilih tidak valid. Muat ulang dashboard sebelum menghapus.');
+  }
+  if (new Set(rows.map(selection => selection.row)).size !== rows.length) {
+    throw new Error('Daftar data yang dipilih tidak valid.');
+  }
 
-  const rows = [];
-  ids.forEach(id => {
-    const matches = matchingRows.get(id);
-    if (matches.length !== 1) {
-      throw new Error('Data yang dipilih tidak ditemukan atau ID-nya tidak unik. Muat ulang dashboard sebelum menghapus.');
+  const sheetRows = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+  rows.forEach(selection => {
+    const currentRow = sheetRows[selection.row - 2];
+    if (!currentRow || deleteToken(selection.row, currentRow) !== selection.token) {
+      throw new Error('Data berubah sejak dashboard dimuat. Muat ulang dashboard lalu pilih ulang sebelum menghapus.');
     }
-    rows.push(matches[0]);
   });
 
-  rows.sort((a, b) => b - a);
-  let groupTop = rows[0];
-  let groupBottom = rows[0];
-  for (let index = 1; index <= rows.length; index += 1) {
-    const row = rows[index];
+  const rowNumbers = rows.map(selection => selection.row).sort((a, b) => b - a);
+  let groupTop = rowNumbers[0];
+  let groupBottom = rowNumbers[0];
+  for (let index = 1; index <= rowNumbers.length; index += 1) {
+    const row = rowNumbers[index];
     if (row !== undefined && row === groupBottom - 1) {
       groupBottom = row;
       continue;
@@ -128,7 +140,7 @@ function adminDeleteMany(data) {
     }
   }
   SpreadsheetApp.flush();
-  return json({ ok: true, deleted: ids.length });
+  return json({ ok: true, deleted: rows.length });
 }
 
 function getSheet() {
