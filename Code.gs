@@ -8,17 +8,40 @@ function authorizeServices() {
   return 'Spreadsheet dan Google Drive siap digunakan';
 }
 
-function doGet() {
+function doGet(e) {
+  if (e && e.parameter) {
+    if (e.parameter.action === 'cleanup') {
+      const result = cleanupOldFiles30Days();
+      return json({
+        ok: true,
+        message: `Pembersihan berhasil: ${result.deletedCount} berkas (>30 hari) telah dipindahkan ke tempat sampah Google Drive. Data rekapan absensi di Spreadsheet dan Dashboard tetap aman tersimpan.`,
+        deletedCount: result.deletedCount,
+        skippedCount: result.skippedCount
+      });
+    }
+    if (e.parameter.action === 'setupTrigger') {
+      const msg = setupDailyCleanupTrigger();
+      return json({ ok: true, message: msg });
+    }
+  }
+
   const sheet = getSheet();
   const values = sheet.getDataRange().getValues();
   if (values.length <= 1) return json({ ok: true, records: [] });
 
   const headers = values.shift();
-  const records = values.map(row => headers.reduce((record, header, index) => {
-    record[header] = row[index];
+  const records = values.map((row, rowIndex) => {
+    const record = headers.reduce((acc, header, index) => {
+      acc[header] = row[index];
+      return acc;
+    }, {});
+    record._row = rowIndex + 2;
     return record;
-  }, {})).map(record => {
+  }).map(record => {
     record.photo = normalizePhotoUrl(record.photo);
+    if (!record.supportingDocument && record.proof) {
+      record.supportingDocument = record.proof;
+    }
     return record;
   });
 
@@ -32,8 +55,6 @@ function doPost(event) {
   } catch (error) {
     return json({ ok: false, message: `Data permintaan tidak valid: ${error.message}` });
   }
-
-  if (data.action === 'delete') return deleteRecords(data);
 
   let rowNumber = 0;
   let rowWritten = false;
@@ -128,36 +149,6 @@ function getSheet() {
   return sheet;
 }
 
-function deleteRecords(data) {
-  try {
-    const configuredToken = PropertiesService.getScriptProperties().getProperty('#Admin_Pr3s3ensi');
-    if (!configuredToken) {
-      throw new Error('Token admin belum dikonfigurasi. Atur Script Property PRESENSI_DELETE_TOKEN terlebih dahulu.');
-    }
-    if (!data.adminToken || String(data.adminToken) !== configuredToken) {
-      throw new Error('Token admin tidak valid.');
-    }
-
-    const ids = Array.isArray(data.ids) ? data.ids.map(String).filter(Boolean) : [];
-    if (!ids.length) throw new Error('Pilih setidaknya satu data untuk dihapus.');
-
-    const sheet = getSheet();
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return json({ ok: true, deleted: 0 });
-
-    const idValues = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues();
-    const requestedIds = new Set(ids);
-    const rows = [];
-    idValues.forEach((value, index) => {
-      if (requestedIds.has(String(value[0]))) rows.push(index + 2);
-    });
-    rows.sort((a, b) => b - a).forEach(row => sheet.deleteRow(row));
-    return json({ ok: true, deleted: rows.length });
-  } catch (error) {
-    return json({ ok: false, message: error.message });
-  }
-}
-
 function formatLocation(location) {
   if (!location) return '';
   const latitude = Number(location.latitude);
@@ -230,4 +221,60 @@ function json(value) {
   return ContentService
     .createTextOutput(JSON.stringify(value))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Menghapus/memindahkan ke tempat sampah berkas foto dan bukti pendukung di Google Drive
+ * yang telah berumur lebih dari 30 hari.
+ * Catatan: Data rekapan absensi di Spreadsheet dan Dashboard TIDAK DIHAPUS dan tetap tersimpan aman.
+ */
+function cleanupOldFiles30Days() {
+  const folder = DRIVE_FOLDER_ID
+    ? DriveApp.getFolderById(DRIVE_FOLDER_ID)
+    : DriveApp.getRootFolder();
+  const files = folder.getFiles();
+  const now = new Date().getTime();
+  const thirtyDaysInMillis = 30 * 24 * 60 * 60 * 1000;
+  let deletedCount = 0;
+  let skippedCount = 0;
+
+  while (files.hasNext()) {
+    const file = files.next();
+    const createdTime = file.getDateCreated().getTime();
+    if (now - createdTime > thirtyDaysInMillis) {
+      try {
+        file.setTrashed(true);
+        deletedCount++;
+      } catch (error) {
+        Logger.log('Gagal memindahkan file ke sampah: ' + file.getName() + ' - ' + error.message);
+      }
+    } else {
+      skippedCount++;
+    }
+  }
+
+  Logger.log(`Pembersihan Drive selesai: ${deletedCount} berkas (>30 hari) dipindahkan ke tempat sampah. ${skippedCount} berkas berumur <= 30 hari dipertahankan.`);
+  return { ok: true, deletedCount: deletedCount, skippedCount: skippedCount };
+}
+
+/**
+ * Memasang trigger otomatis harian di Google Apps Script (berjalan setiap hari jam 01.00 pagi)
+ * sehingga berkas berumur lebih dari 30 hari di Google Drive otomatis terhapus secara berkala.
+ */
+function setupDailyCleanupTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  for (let i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'cleanupOldFiles30Days') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+
+  ScriptApp.newTrigger('cleanupOldFiles30Days')
+    .timeBased()
+    .everyDays(1)
+    .atHour(1)
+    .create();
+
+  Logger.log('Trigger harian pembersihan berkas >30 hari berhasil dipasang.');
+  return 'Trigger pembersihan otomatis harian berhasil dipasang. Berkas di Google Drive yang melewati 30 hari akan otomatis dipindahkan ke sampah.';
 }

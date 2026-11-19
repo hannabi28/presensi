@@ -1,65 +1,1116 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard Admin - Absensi PKL</title>
   <style>
     :root{--blue:#07529a;--yellow:#f4c51b;--ink:#12233d;--muted:#6d7f99;--line:#dbe5f1;--bg:#edf5ff;--green:#19a85a;--red:#d73d4f;--orange:#e88a14}
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:linear-gradient(120deg,#063d76,#087be5);min-height:100vh}header{height:92px;background:var(--yellow);display:flex;align-items:center;padding:0 max(24px,calc((100% - 1240px)/2));gap:18px}header img{width:128px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:5px}header h1{font-size:21px;margin:0;color:#073b72}header p{font-size:13px;margin:5px 0 0;color:#273d5d}.header-actions{margin-left:auto;display:flex;gap:10px;align-items:center}.clock{background:#fff3c4;border-radius:11px;padding:9px 16px;text-align:center;font-size:12px;color:#57708f}.clock strong{display:block;font-size:15px;color:#173b67}.refresh{border:0;background:#073b72;color:#fff;padding:13px 18px;border-radius:10px;font-weight:700;cursor:pointer}
-    main{max-width:1240px;margin:32px auto;padding:0 20px 50px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.stat,.panel{background:#fff;border-radius:18px;box-shadow:0 10px 30px #032d5b2b}.stat{padding:23px 24px;position:relative}.stat small{color:var(--muted);font-weight:600}.stat strong{display:block;font-size:32px;margin-top:9px}.stat span{position:absolute;right:22px;top:23px;font-size:26px;background:#fff4cd;border-radius:12px;padding:10px}.stat.green span{background:#dff8d8}.stat.red span{background:#ffe3e5}.stat.orange span{background:#ffebcf}
-    .panel{margin-top:22px;padding:25px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.panel h2{font-size:18px;margin:0}.panel p{font-size:13px;color:var(--muted);margin:6px 0 0}.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.chart-box{border:1px solid var(--line);border-radius:13px;padding:18px}.chart-box h3{margin:0 0 16px;font-size:14px}.bar-row{display:grid;grid-template-columns:112px 1fr 35px;align-items:center;gap:9px;margin:13px 0;font-size:12px}.bar-track{height:13px;background:#edf2f8;border-radius:20px;overflow:hidden}.bar-fill{height:100%;border-radius:20px;min-width:2px}.bar-green{background:#20ae61}.bar-red{background:#dc4d5c}.bar-yellow{background:#e8ae1b}.bar-orange{background:#e98628}.daily-chart{height:190px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line);padding:15px 3px 0}.day-column{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:24px}.day-bar{width:100%;max-width:34px;background:#1681ef;border-radius:6px 6px 0 0;min-height:2px}.day-column small{font-size:10px;color:var(--muted);white-space:nowrap;transform:rotate(-35deg);transform-origin:top center;margin-top:8px}.day-count{font-size:10px;font-weight:700;color:#126dc6}.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.detail-card{border:1px solid var(--line);border-top:4px solid #20ae61;border-radius:11px;padding:15px;min-width:0}.detail-card.red{border-top-color:#dc4d5c}.detail-card.yellow{border-top-color:#e8ae1b}.detail-card.orange{border-top-color:#e98628}.detail-card h3{font-size:13px;margin:0}.detail-number{font-size:28px;font-weight:800;margin:8px 0}.detail-list{border-top:1px solid var(--line);padding-top:8px;max-height:150px;overflow:auto}.detail-list div{font-size:11px;padding:6px 0;border-bottom:1px dashed var(--line);line-height:1.35}.filters{display:flex;gap:10px;flex-wrap:wrap}.filters input,.filters select{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit;color:var(--ink);background:#fbfdff}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:800px}.table th{text-align:left;color:#6b83a2;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:13px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.table td{padding:14px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}.table td strong{display:block}.thumb{width:45px;height:38px;object-fit:cover;border-radius:6px;cursor:pointer}.photo-missing{display:inline-block;max-width:85px;color:var(--muted);font-size:10px;line-height:1.2}.badge{display:inline-block;padding:6px 9px;border-radius:20px;font-size:11px;font-weight:800}.hadir,.hadir-pulang{background:#dcf7e7;color:#18763d}.hadir-terlambat,.terlambat-pulang,.terlambat{background:#ffe3c7;color:#a85300}.tidak-hadir{background:#ffe1e4;color:#bd2639}.ijin{background:#fff1c8;color:#926500}.empty{text-align:center!important;color:var(--muted);padding:35px!important}.sanction{padding:16px 18px;border-left:5px solid var(--orange);background:#fff9ed;border-radius:10px;margin-bottom:18px;font-size:13px;line-height:1.5}.sanction strong{color:#8e5800}.rules{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}.rule{background:#f6f9fd;border:1px solid var(--line);border-radius:10px;padding:13px;font-size:12px}.rule b{font-size:20px;display:block;color:#126dc6}.danger{color:var(--red);font-weight:800}.modal{display:none;position:fixed;inset:0;background:#001d3d99;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.open{display:flex}.modal-content{background:#fff;padding:18px;border-radius:15px;max-width:600px;max-height:90vh}.modal img{max-width:100%;max-height:75vh;display:block}.modal button{float:right;border:0;background:#073b72;color:#fff;border-radius:7px;padding:7px 12px;cursor:pointer}
-    @media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.rules{grid-template-columns:repeat(2,1fr)}.analysis-grid,.detail-grid{grid-template-columns:1fr 1fr}header{padding:16px 20px;height:auto}.header-actions{flex-wrap:wrap;justify-content:flex-end}.clock{display:none}}@media(max-width:520px){.stats{grid-template-columns:1fr}.analysis-grid,.detail-grid{grid-template-columns:1fr}header img{width:100px;height:48px}header h1{font-size:16px}.panel-head{align-items:flex-start;flex-direction:column}.filters{width:100%}.filters>*{flex:1;min-width:120px}}
-  </style>
-  <style>
-    .person-table{min-width:820px}.person-table td:nth-child(6){min-width:180px}.person-table td small{display:block;color:var(--muted);margin-top:3px}.rate-track{height:9px;background:#edf2f8;border-radius:20px;overflow:hidden;margin-top:6px}.rate-fill{height:100%;background:#20ae61;border-radius:20px}.filter-period{min-width:155px}.date-range{display:flex;align-items:center;gap:6px}.date-range input{min-width:135px}.history-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.export-button{border:0;background:#19a85a;color:white;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
-    .person-analysis{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:13px;background:#fbfdff}.person-analysis-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.person-analysis-head h3{margin:0;font-size:15px}.person-analysis-head p{margin:5px 0 0;font-size:12px;color:var(--muted)}.person-analysis-head select{min-width:230px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:white;color:var(--ink);font:inherit}.person-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}.person-stat{background:white;border:1px solid var(--line);border-radius:10px;padding:12px}.person-stat small{display:block;color:var(--muted);font-size:11px}.person-stat strong{display:block;margin-top:5px;font-size:20px}.person-analysis .analysis-grid{margin-bottom:16px}.person-history-wrap{max-height:300px;overflow:auto}.person-history{min-width:650px}.person-history th{position:sticky;top:0;background:white;z-index:1}
-    @media(max-width:850px){.date-range{width:100%}.date-range input{flex:1;min-width:0}}
-    @media(max-width:850px){.person-stats{grid-template-columns:repeat(3,1fr)}.person-analysis-head{align-items:flex-start;flex-direction:column}.person-analysis-head select{width:100%}}
-    @media(max-width:520px){.person-stats{grid-template-columns:repeat(2,1fr)}}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:linear-gradient(120deg,#063d76,#087be5);min-height:100vh}
+    header{height:92px;background:var(--yellow);display:flex;align-items:center;padding:0 max(24px,calc((100% - 1240px)/2));gap:18px}
+    header img{width:128px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:5px}
+    header h1{font-size:21px;margin:0;color:#073b72}header p{font-size:13px;margin:5px 0 0;color:#273d5d}
+    .header-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+    .clock{background:#fff3c4;border-radius:11px;padding:9px 16px;text-align:center;font-size:12px;color:#57708f}
+    .clock strong{display:block;font-size:15px;color:#173b67}
+    .refresh{border:0;background:#073b72;color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}
+    .cleanup-button{border:0;background:#d73d4f;color:#fff;border-radius:10px;padding:12px 16px;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+    .cleanup-button:hover{filter:brightness(.92)}
+    main{max-width:1240px;margin:32px auto;padding:0 20px 50px}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+    .stat,.panel{background:#fff;border-radius:18px;box-shadow:0 10px 30px #032d5b2b}
+    .stat{padding:20px 22px;position:relative}
+    .stat small{color:var(--muted);font-weight:600;font-size:12px}
+    .stat strong{display:block;font-size:28px;margin-top:8px;line-height:1.15}
+    .stat span{position:absolute;right:18px;top:20px;font-size:24px;background:#fff4cd;border-radius:12px;padding:8px}
+    .stat.green span{background:#dff8d8}
+    .stat.red span{background:#ffe3e5}
+    .stat.orange span{background:#ffebcf}
+    .stat.yellow span{background:#fff9db}
+    .panel{margin-top:22px;padding:25px}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+    .panel h2{font-size:18px;margin:0}.panel p{font-size:13px;color:var(--muted);margin:6px 0 0}
+    .analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .chart-box{border:1px solid var(--line);border-radius:13px;padding:18px}
+    .chart-box h3{margin:0 0 16px;font-size:14px}
+    .bar-row{display:grid;grid-template-columns:112px 1fr 35px;align-items:center;gap:9px;margin:13px 0;font-size:12px}
+    .bar-track{height:13px;background:#edf2f8;border-radius:20px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:20px;min-width:2px}
+    .bar-green{background:#20ae61}.bar-red{background:#dc4d5c}.bar-yellow{background:#e8ae1b}.bar-orange{background:#e98628}
+    .daily-chart{height:190px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line);padding:15px 3px 0}
+    .day-column{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:24px}
+    .day-bar{width:100%;max-width:34px;background:#1681ef;border-radius:6px 6px 0 0;min-height:2px}
+    .day-column small{font-size:10px;color:var(--muted);white-space:nowrap;transform:rotate(-35deg);transform-origin:top center;margin-top:8px}
+    .day-count{font-size:10px;font-weight:700;color:#126dc6}
+    .detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .detail-card{border:1px solid var(--line);border-top:4px solid #20ae61;border-radius:11px;padding:15px;min-width:0}
+    .detail-card.red{border-top-color:#dc4d5c}.detail-card.yellow{border-top-color:#e8ae1b}.detail-card.orange{border-top-color:#e98628}
+    .detail-card h3{font-size:13px;margin:0}.detail-number{font-size:28px;font-weight:800;margin:8px 0}
+    .detail-list{border-top:1px solid var(--line);padding-top:8px;max-height:150px;overflow:auto}
+    .detail-list div{font-size:11px;padding:6px 0;border-bottom:1px dashed var(--line);line-height:1.35}
+    .filters{display:flex;gap:10px;flex-wrap:wrap}
+    .filters input,.filters select{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit;color:var(--ink);background:#fbfdff}
+    .table-wrap{overflow:auto}
+    .table{width:100%;border-collapse:collapse;min-width:800px}
+    .table th{text-align:left;color:#6b83a2;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:13px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .table td{padding:14px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+    .table td strong{display:block}
+    .thumb{width:45px;height:38px;object-fit:cover;border-radius:6px;cursor:pointer}
+    .photo-missing{display:inline-block;max-width:85px;color:var(--muted);font-size:10px;line-height:1.2}
+    .photo-archived{display:inline-block;max-width:105px;color:#856404;background:#fff3cd;padding:3px 6px;border-radius:6px;font-size:10px;line-height:1.2}
+    .badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}
+    .hadir,.hadir-pulang{background:#dcf7e7;color:#18763d}
+    .hadir-terlambat,.terlambat-pulang,.terlambat{background:#ffe3c7;color:#a85300}
+    .tidak-hadir{background:#ffe1e4;color:#bd2639}
+    .ijin{background:#fff1c8;color:#926500}
+    .badge-unclosed{display:inline-block;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#ffe3c7;color:#a85300}
+    .badge-completed{display:inline-block;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#dcf7e7;color:#18763d}
+    .empty{text-align:center!important;color:var(--muted);padding:35px!important}
+    .sanction{padding:16px 18px;border-left:5px solid var(--orange);background:#fff9ed;border-radius:10px;margin-bottom:18px;font-size:13px;line-height:1.5}
+    .sanction strong{color:#8e5800}
+    .rules{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+    .rule{background:#f6f9fd;border:1px solid var(--line);border-radius:10px;padding:13px;font-size:12px}
+    .rule b{font-size:20px;display:block;color:#126dc6}
+    .danger{color:var(--red);font-weight:800}
+    .modal{display:none;position:fixed;inset:0;background:#001d3d99;align-items:center;justify-content:center;padding:20px;z-index:100}
+    .modal.open{display:flex}
+    .modal-content{background:#fff;padding:20px;border-radius:16px;max-width:620px;max-height:90vh;box-shadow:0 15px 40px rgba(0,0,0,.3)}
+    .modal img{max-width:100%;max-height:75vh;display:block;border-radius:8px}
+    .modal button{float:right;border:0;background:#073b72;color:#fff;border-radius:7px;padding:7px 14px;cursor:pointer;font-weight:700}
+    .person-table{min-width:880px}
+    .person-table td:nth-child(6){min-width:180px}
+    .person-table td small{display:block;color:var(--muted);margin-top:3px}
+    .rate-track{height:9px;background:#edf2f8;border-radius:20px;overflow:hidden;margin-top:6px}
+    .rate-fill{height:100%;background:#20ae61;border-radius:20px}
+    .filter-period{min-width:155px}
+    .date-range{display:flex;align-items:center;gap:6px}
+    .date-range input{min-width:135px}
+    .history-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .export-button{border:0;background:#19a85a;color:white;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+    .export-button:hover{filter:brightness(.94)}
+    .export-button-secondary{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .export-button-secondary:hover{background:#f0f5fa}
+    .person-analysis{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:13px;background:#fbfdff}
+    .person-analysis-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    .person-analysis-head h3{margin:0;font-size:15px}
+    .person-analysis-head p{margin:5px 0 0;font-size:12px;color:var(--muted)}
+    .person-analysis-head select{min-width:240px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:white;color:var(--ink);font:inherit}
+    .person-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+    .person-stat{background:white;border:1px solid var(--line);border-radius:10px;padding:12px}
+    .person-stat small{display:block;color:var(--muted);font-size:11px}
+    .person-stat strong{display:block;margin-top:5px;font-size:18px}
+    .person-analysis .analysis-grid{margin-bottom:16px}
+    .person-history-wrap{max-height:300px;overflow:auto}
+    .person-history{min-width:720px}
+    .person-history th{position:sticky;top:0;background:white;z-index:1}
+    @media(max-width:980px){.stats{grid-template-columns:repeat(3,1fr)}.rules{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:850px){.analysis-grid,.detail-grid{grid-template-columns:1fr 1fr}header{padding:16px 20px;height:auto}.header-actions{flex-wrap:wrap;justify-content:flex-end}.clock{display:none}.date-range{width:100%}.date-range input{flex:1;min-width:0}.person-stats{grid-template-columns:repeat(3,1fr)}.person-analysis-head{align-items:flex-start;flex-direction:column}.person-analysis-head select{width:100%}}
+    @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.rules{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.stats{grid-template-columns:1fr}.analysis-grid,.detail-grid{grid-template-columns:1fr}header img{width:100px;height:48px}header h1{font-size:16px}.panel-head{align-items:flex-start;flex-direction:column}.filters{width:100%}.filters>*{flex:1;min-width:120px}.person-stats{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
-  <header><img src="logo.png" alt="Logo Komdigi"><div><h1>DASHBOARD ADMIN ABSENSI</h1><p>Monitoring kehadiran peserta magang / PKL</p></div><div class="header-actions"><div class="clock"><strong id="time">--:--:--</strong><span id="date">--</span></div><button class="refresh" onclick="render()">↻ Refresh</button></div></header>
+  <header>
+    <img src="logo.png" alt="Logo Komdigi">
+    <div>
+      <h1>DASHBOARD ADMIN ABSENSI</h1>
+      <p>Monitoring kehadiran peserta magang / PKL</p>
+    </div>
+    <div class="header-actions">
+      <div class="clock"><strong id="time">--:--:--</strong><span id="date">--</span></div>
+      <button class="cleanup-button" id="cleanupDriveBtn" type="button" title="Bersihkan file foto & bukti di Google Drive yang sudah melewati 30 hari">🗑 Bersihkan Drive (>30 Hari)</button>
+      <button class="refresh" onclick="render()">↻ Refresh</button>
+    </div>
+  </header>
   <main>
-    <section class="stats"><div class="stat"><small>Total Absensi</small><strong id="total">0</strong><span>📋</span></div><div class="stat green"><small>Hadir</small><strong id="hadir">0</strong><span>✓</span></div><div class="stat red"><small>Tidak Hadir</small><strong id="tidakHadir">0</strong><span>✕</span></div><div class="stat orange"><small>Terlambat / Ijin</small><strong id="other">0</strong><span>◷</span></div></section>
-    <section class="panel"><div class="panel-head"><div><h2>Analisis Absensi</h2><p>Grafik dan angka diperbarui otomatis dari data absensi tersimpan.</p></div></div><div class="analysis-grid"><div class="chart-box"><h3>Distribusi Keterangan</h3><div id="statusChart"></div></div><div class="chart-box"><h3>Tren Absensi Harian</h3><div id="dailyChart" class="daily-chart"></div></div></div><div class="person-analysis"><div class="person-analysis-head"><div><h3>Grafik & Rincian Per Individu</h3><p>Pilih peserta untuk melihat distribusi status, tren harian, dan riwayat absensinya.</p></div><select id="personAnalysisFilter" aria-label="Pilih peserta untuk analisis"><option value="">Memuat peserta...</option></select></div><div id="personAnalysisContent"></div></div></section>
-    <section class="panel"><div class="panel-head"><div><h2>Rincian Angka Rekapan</h2><p>Daftar peserta dan data yang membentuk setiap angka pada rekap.</p></div></div><div id="detailCards" class="detail-grid"></div></section>
-    <section class="panel"><div class="panel-head"><div><h2>Rekap Ketidakhadiran & Sanksi</h2><p>Hari tidak hadir tercatat ditambah setiap akumulasi keterlambatan 8 jam menjadi satu hari setara tidak hadir.</p></div></div><div id="sanctions"></div><div class="rules"><div class="rule"><b>3</b>hari kerja tidak masuk<br><span>Punishment</span></div><div class="rule"><b>7</b>hari kerja tidak masuk<br><span>Teguran SP1</span></div><div class="rule"><b>14</b>hari kerja tidak masuk<br><span>Teguran SP2</span></div><div class="rule"><b>21</b>hari kerja tidak masuk<br><span>SP3 / surat penarikan</span></div><div class="rule"><b>10</b>hari berturut-turut<br><span>Surat penarikan</span></div></div></section>
-    <section class="panel"><div class="panel-head"><div><h2>Persentase Kehadiran Per Peserta</h2><p>Hari hadir dibanding hari tercatat (termasuk ijin); setiap 8 jam terlambat mengubah satu hari hadir menjadi setara tidak hadir.</p></div></div><div class="table-wrap"><table class="table person-table"><thead><tr><th>Nama</th><th>Hadir</th><th>Tidak hadir</th><th>Ijin</th><th>Terlambat</th><th>Persentase hadir</th></tr></thead><tbody id="personRows"></tbody></table></div></section>
-    <section class="panel"><div class="panel-head"><div><h2>Riwayat Absensi</h2><p id="subtitle">Menampilkan seluruh data dari formulir peserta</p></div><div class="filters"><select id="period" class="filter-period" aria-label="Periode riwayat"><option value="all">Semua Waktu</option><option value="1m">1 Bulan Terakhir</option><option value="3m">3 Bulan Terakhir</option><option value="year">Tahun Ini (Jan–Des)</option><option value="custom">Rentang Tanggal</option></select><div class="date-range"><input id="dateFrom" type="date" aria-label="Tanggal mulai"><span>s/d</span><input id="dateTo" type="date" aria-label="Tanggal akhir"></div><select id="filter"><option value="">Semua Keterangan</option><option>Hadir</option><option>Hadir Pulang</option><option>Hadir Terlambat</option><option>Tidak Hadir</option><option>Ijin</option><option>Terlambat</option><option>Terlambat Pulang</option></select><input id="search" placeholder="Cari nama / prodi"></div></div><div class="history-actions"><button id="exportRecords" class="export-button" type="button">⇩ Export CSV</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Foto</th><th>Tanggal & Jam</th><th>Nama</th><th>Jurusan / Prodi</th><th>Keterangan</th><th>Alasan</th><th>Bukti</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+    <section class="stats">
+      <div class="stat"><small>Total Absensi</small><strong id="total">0</strong><span>📋</span></div>
+      <div class="stat green"><small>Hadir (Sesi)</small><strong id="hadir">0</strong><span>✓</span></div>
+      <div class="stat orange"><small>Total Terlambat</small><strong id="totalTerlambat">0j 0m</strong><span>◷</span></div>
+      <div class="stat yellow"><small>Ijin</small><strong id="ijin">0</strong><span>📄</span></div>
+      <div class="stat red"><small>Tidak Hadir</small><strong id="tidakHadir">0</strong><span>✕</span></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Analisis Absensi</h2>
+          <p>Grafik dan angka diperbarui otomatis dari data absensi tersimpan.</p>
+        </div>
+      </div>
+      <div class="analysis-grid">
+        <div class="chart-box"><h3>Distribusi Keterangan</h3><div id="statusChart"></div></div>
+        <div class="chart-box"><h3>Tren Absensi Harian</h3><div id="dailyChart" class="daily-chart"></div></div>
+      </div>
+      <div class="person-analysis">
+        <div class="person-analysis-head">
+          <div>
+            <h3>Grafik &amp; Rincian Per Individu</h3>
+            <p>Pilih peserta untuk melihat distribusi status, tren harian, keterlambatan check-out, dan riwayat absensinya.</p>
+          </div>
+          <select id="personAnalysisFilter" aria-label="Pilih peserta untuk analisis"><option value="">Memuat peserta...</option></select>
+        </div>
+        <div id="personAnalysisContent"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Rincian Angka Rekapan</h2>
+          <p>Daftar peserta dan data yang membentuk setiap angka pada rekap.</p>
+        </div>
+      </div>
+      <div id="detailCards" class="detail-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Rekap Ketidakhadiran &amp; Sanksi</h2>
+          <p>Hari tidak hadir tercatat ditambah akumulasi keterlambatan (setiap 8 jam terlambat = 1 hari setara tidak hadir; tidak check out = 4 jam terlambat).</p>
+        </div>
+      </div>
+      <div id="sanctions"></div>
+      <div class="rules">
+        <div class="rule"><b>3</b>hari kerja tidak masuk<br><span>Punishment</span></div>
+        <div class="rule"><b>7</b>hari kerja tidak masuk<br><span>Teguran SP1</span></div>
+        <div class="rule"><b>14</b>hari kerja tidak masuk<br><span>Teguran SP2</span></div>
+        <div class="rule"><b>21</b>hari kerja tidak masuk<br><span>SP3 / surat penarikan</span></div>
+        <div class="rule"><b>10</b>hari berturut-turut<br><span>Surat penarikan</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Persentase Kehadiran Per Peserta</h2>
+          <p>Persentase hadir dihitung saat check out. Jika tidak check out, penalti keterlambatan 4 jam (setara 0.5 hari). Setiap 8 jam terlambat setara 1 hari tidak hadir.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table person-table">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Hadir</th>
+              <th>Tidak hadir</th>
+              <th>Ijin</th>
+              <th>Total Terlambat</th>
+              <th>Persentase hadir</th>
+            </tr>
+          </thead>
+          <tbody id="personRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Riwayat Absensi</h2>
+          <p id="subtitle">Menampilkan seluruh data dari formulir peserta</p>
+        </div>
+        <div class="filters">
+          <select id="period" class="filter-period" aria-label="Periode riwayat">
+            <option value="all">Semua Waktu</option>
+            <option value="1m">1 Bulan Terakhir</option>
+            <option value="3m">3 Bulan Terakhir</option>
+            <option value="year">Tahun Ini (Jan–Des)</option>
+            <option value="custom">Rentang Tanggal</option>
+          </select>
+          <div class="date-range">
+            <input id="dateFrom" type="date" aria-label="Tanggal mulai"><span>s/d</span><input id="dateTo" type="date" aria-label="Tanggal akhir">
+          </div>
+          <select id="filter">
+            <option value="">Semua Keterangan</option>
+            <option>Hadir</option>
+            <option>Hadir Pulang</option>
+            <option>Hadir Terlambat</option>
+            <option>Tidak Hadir</option>
+            <option>Ijin</option>
+            <option>Terlambat</option>
+            <option>Terlambat Pulang</option>
+          </select>
+          <input id="search" placeholder="Cari nama / prodi">
+        </div>
+      </div>
+      <div class="history-actions">
+        <button id="exportExcel" class="export-button" type="button">⇩ Export Excel (.xls)</button>
+        <button id="exportCSV" class="export-button-secondary" type="button">⇩ Export CSV</button>
+        <span style="font-size:12px;color:var(--muted);margin-left:auto" id="driveNotice">
+          Retensi Google Drive: Berkas foto/bukti &gt;30 hari dibersihkan otomatis, data tabel tetap tersimpan aman.
+        </span>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Foto / Bukti</th>
+              <th>Tanggal &amp; Jam</th>
+              <th>Nama</th>
+              <th>Jurusan / Prodi</th>
+              <th>Jenis Absensi</th>
+              <th>Keterangan</th>
+              <th>Alasan</th>
+              <th>Bukti Pendukung</th>
+              <th>Status Check-out</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
   
-  <div id="modal" class="modal"><div class="modal-content"><button onclick="document.getElementById('modal').classList.remove('open')">Tutup</button><img id="modalImg" alt="Dokumentasi absensi"><p id="photoError" hidden>Foto tidak tersedia. Periksa izin akses Google Drive atau unggah ulang foto.</p></div></div>
-  <script>
-    const API_URL='https://script.google.com/macros/s/AKfycbxv4WVmOSi1pYUwBWd1-SeLT6a14UyvsrgH1B2HR95T5Doq4nz5HHe_RznDMthUX6YDOA/exec';
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <button onclick="document.getElementById('modal').classList.remove('open')">Tutup</button>
+      <div style="clear:both;padding-top:10px">
+        <img id="modalImg" alt="Dokumentasi absensi">
+        <p id="photoError" hidden style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:10px">
+          Foto tidak dapat dimuat atau telah dibersihkan dari Google Drive sesuai kebijakan retensi 30 hari. Data rekapan absensi tetap tersimpan aman di Spreadsheet dan Dashboard.
+        </p>
+      </div>
+    </div>
+  </div>
 
-    let currentFilteredRecords=[];
-    let currentRecords=[];
-    async function getRecords(){const response=await fetch(API_URL);const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.message||'Data absensi tidak dapat dibaca');return result.records||[]}
-    const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    function dateKey(value){const text=String(value||'');if(/^\d{4}-\d{2}-\d{2}$/.test(text))return text;const date=new Date(text);if(Number.isNaN(date.getTime()))return text;const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Makassar',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date).reduce((result,part)=>{result[part.type]=part.value;return result},{});return`${parts.year}-${parts.month}-${parts.day}`}
-    function todayKey(){return dateKey(new Date().toISOString())}
-    function displayDate(record){const key=dateKey(record.date||record.dateLabel);if(!/^\d{4}-\d{2}-\d{2}$/.test(key))return String(record.dateLabel||record.date||'-');return new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Makassar',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(new Date(`${key}T12:00:00+08:00`))}
-    function formatTime(value){const text=String(value||'');const match=text.match(/^(\d{1,2}):(\d{2})/);if(match)return`${match[1].padStart(2,'0')}:${match[2]}`;const date=new Date(text);return Number.isNaN(date.getTime())?text:new Intl.DateTimeFormat('id-ID',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date)}
-    function photoUrl(value){const url=String(value||'');if(url.includes('drive.google.com/thumbnail'))return url;const match=url.match(/\/file\/d\/([^/]+)/)||url.match(/[?&]id=([^&]+)/);return match?`https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`:url}
-    function workingDay(date){const d=new Date(`${date}T00:00:00Z`).getUTCDay();return d!==0&&d!==6}
-    function lateMinutes(record){if(!['Terlambat','Hadir Terlambat'].includes(record.status))return 0;const match=String(record.arrival||'').match(/^(\d{1,2}):(\d{2})/);if(!match)return 0;const arrival=Number(match[1])*60+Number(match[2]);return Math.max(0,arrival-8*60)}
-    function participantSummaries(records){const participants=new Map();records.forEach(record=>{const name=String(record.name||'Tanpa nama'),department=String(record.department||''),key=`${name}\u0000${department}`;if(!participants.has(key))participants.set(key,{name,department,days:new Map(),lateByDate:new Map()});const person=participants.get(key),date=dateKey(record.date);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;const day=person.days.get(date)||{present:false,absent:false,leave:false};if(['Hadir','Hadir Pulang','Hadir Terlambat','Terlambat','Terlambat Pulang'].includes(record.status))day.present=true;if(record.status==='Tidak Hadir')day.absent=true;if(record.status==='Ijin')day.leave=true;person.days.set(date,day);person.lateByDate.set(date,Math.max(person.lateByDate.get(date)||0,lateMinutes(record)))});return Array.from(participants.values()).map(person=>{let present=0,absent=0,leave=0;person.days.forEach(day=>{if(day.present)present++;else if(day.absent)absent++;else if(day.leave)leave++});const lateTotal=Array.from(person.lateByDate.values()).reduce((sum,value)=>sum+value,0),lateDays=Math.floor(lateTotal/480),trackedDays=present+absent+leave,rate=trackedDays?Math.max(0,present-lateDays)/trackedDays*100:0;return{...person,present,absent,leave,lateTotal,lateDays,rate,trackedDays}}).sort((a,b)=>a.name.localeCompare(b.name,'id')||a.department.localeCompare(b.department,'id'))}
-    function absenceSummary(records){const grouped=new Map();records.forEach(record=>{const name=String(record.name||'Tanpa nama'),date=dateKey(record.date);if(!grouped.has(name))grouped.set(name,{dates:new Set(),lateByDate:new Map()});const person=grouped.get(name);if(record.status==='Tidak Hadir'&&workingDay(date))person.dates.add(date);person.lateByDate.set(date,Math.max(person.lateByDate.get(date)||0,lateMinutes(record)))});return Array.from(grouped.entries()).map(([name,person])=>{const dates=Array.from(person.dates).sort();let maxRun=0,run=0,previous=null;dates.forEach(date=>{if(previous){const next=new Date(`${previous}T00:00:00Z`);do{next.setUTCDate(next.getUTCDate()+1)}while(!workingDay(next.toISOString().slice(0,10)));run=next.toISOString().slice(0,10)===date?run+1:1}else run=1;previous=date;maxRun=Math.max(maxRun,run)});const lateMinutesTotal=Array.from(person.lateByDate.values()).reduce((sum,value)=>sum+value,0),lateDays=Math.floor(lateMinutesTotal/480),total=dates.length+lateDays;let level=total>=21?'SP3 / Surat Penarikan':total>=14?'SP2':total>=7?'SP1':total>=3?'Punishment':'Belum ada sanksi';if(maxRun>=10)level='Surat Penarikan';return{name,total,absenceDays:dates.length,lateDays,lateMinutesTotal,maxRun,level}})}
-    function renderAnalytics(records){const groups=[{label:'Hadir',statuses:['Hadir','Hadir Pulang'],color:'green'},{label:'Tidak Hadir',statuses:['Tidak Hadir'],color:'red'},{label:'Ijin',statuses:['Ijin'],color:'yellow'},{label:'Terlambat',statuses:['Terlambat','Hadir Terlambat','Terlambat Pulang'],color:'orange'}];const total=records.length;document.getElementById('statusChart').innerHTML=groups.map(group=>{const items=records.filter(r=>group.statuses.includes(r.status));const percent=total?Math.round(items.length/total*100):0;return`<div class="bar-row"><span>${group.label}</span><div class="bar-track"><div class="bar-fill bar-${group.color}" style="width:${percent}%"></div></div><b>${items.length}</b></div>`}).join('');const daily={};records.forEach(r=>{const date=dateKey(r.date);daily[date]=(daily[date]||0)+1});const days=Object.entries(daily).sort((a,b)=>a[0].localeCompare(b[0])).slice(-10);const max=Math.max(...days.map(item=>item[1]),1);document.getElementById('dailyChart').innerHTML=days.length?days.map(([date,count])=>`<div class="day-column" title="${esc(date)}: ${count} absensi"><span class="day-count">${count}</span><div class="day-bar" style="height:${Math.max(4,count/max*145)}px"></div><small>${esc(date.slice(5))}</small></div>`).join(''):'<span class="empty">Belum ada data harian.</span>';document.getElementById('detailCards').innerHTML=groups.map(group=>{const items=records.filter(r=>group.statuses.includes(r.status));const details=items.length?items.map(r=>`<div><b>${esc(r.name)}</b><br>${esc(displayDate(r))} · ${esc(r.status)}</div>`).join(''):'<div>Belum ada data.</div>';return`<article class="detail-card ${group.color}"><h3>${group.label}</h3><div class="detail-number">${items.length}</div><div class="detail-list">${details}</div></article>`}).join('')}
-    function personAnalysisKey(person){return JSON.stringify([person.name,person.department])}
-    function renderIndividualAnalytics(records){const select=document.getElementById('personAnalysisFilter'),container=document.getElementById('personAnalysisContent'),people=participantSummaries(records),previous=select.value;if(!people.length){select.innerHTML='<option value="">Belum ada peserta</option>';container.innerHTML='<div class="empty">Belum ada data untuk dianalisis.</div>';return}select.innerHTML=people.map(person=>`<option value="${esc(personAnalysisKey(person))}">${esc(person.name)}${person.department?` — ${esc(person.department)}`:''}</option>`).join('');const selected=people.find(person=>personAnalysisKey(person)===previous)||people[0];select.value=personAnalysisKey(selected);const personRecords=records.filter(record=>String(record.name||'Tanpa nama')===selected.name&&String(record.department||'')===selected.department),groups=[{label:'Hadir',statuses:['Hadir','Hadir Pulang'],color:'green'},{label:'Terlambat',statuses:['Terlambat','Hadir Terlambat','Terlambat Pulang'],color:'orange'},{label:'Tidak Hadir',statuses:['Tidak Hadir'],color:'red'},{label:'Ijin',statuses:['Ijin'],color:'yellow'}];const chart=groups.map(group=>{const count=personRecords.filter(record=>group.statuses.includes(record.status)).length,percent=personRecords.length?Math.round(count/personRecords.length*100):0;return`<div class="bar-row"><span>${group.label}</span><div class="bar-track"><div class="bar-fill bar-${group.color}" style="width:${percent}%"></div></div><b>${count}</b></div>`}).join('');const daily={};personRecords.forEach(record=>{const date=dateKey(record.date);daily[date]=(daily[date]||0)+1});const days=Object.entries(daily).sort((a,b)=>a[0].localeCompare(b[0])).slice(-10),max=Math.max(...days.map(day=>day[1]),1),trend=days.length?days.map(([date,count])=>`<div class="day-column" title="${esc(date)}: ${count} absensi"><span class="day-count">${count}</span><div class="day-bar" style="height:${Math.max(4,count/max*145)}px"></div><small>${esc(date.slice(5))}</small></div>`).join(''):'<span class="empty">Belum ada tren absensi.</span>';const history=personRecords.slice().sort((a,b)=>dateKey(b.date).localeCompare(dateKey(a.date))||String(b.createdAt).localeCompare(String(a.createdAt)));container.innerHTML=`<div class="person-stats"><div class="person-stat"><small>Hari hadir</small><strong>${selected.present}</strong></div><div class="person-stat"><small>Tidak hadir termasuk ekuivalen terlambat</small><strong>${selected.absent+selected.lateDays}</strong></div><div class="person-stat"><small>Ijin</small><strong>${selected.leave}</strong></div><div class="person-stat"><small>Total terlambat</small><strong>${Math.floor(selected.lateTotal/60)}j ${selected.lateTotal%60}m</strong></div><div class="person-stat"><small>Persentase hadir</small><strong>${selected.rate.toFixed(1)}%</strong></div></div><div class="analysis-grid"><div class="chart-box"><h3>Distribusi Keterangan (${personRecords.length} catatan)</h3>${chart}</div><div class="chart-box"><h3>Tren Absensi Harian</h3><div class="daily-chart">${trend}</div></div></div><h3>Rincian Riwayat ${esc(selected.name)}</h3><div class="person-history-wrap"><table class="table person-history"><thead><tr><th>Tanggal</th><th>Jam</th><th>Jenis absensi</th><th>Keterangan</th><th>Alasan</th></tr></thead><tbody>${history.length?history.map(record=>`<tr><td>${esc(displayDate(record))}</td><td>${esc(formatTime(record.arrival||record.createdAt))}</td><td>${esc(record.attendanceType||'-')}</td><td><span class="badge ${esc(String(record.status||'').toLowerCase().replace(/\s+/g,'-'))}">${esc(record.status)}</span></td><td>${esc(record.reason||'-')}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">Belum ada rincian absensi.</td></tr>'}</tbody></table></div>`}
-    function renderParticipants(records){const people=participantSummaries(records);document.getElementById('personRows').innerHTML=people.length?people.map(person=>`<tr><td><strong>${esc(person.name)}</strong><small>${esc(person.department)}</small></td><td>${person.present} hari</td><td>${person.absent+person.lateDays} hari<small>${person.absent} tercatat + ${person.lateDays} setara terlambat</small></td><td>${person.leave} hari</td><td>${Math.floor(person.lateTotal/60)}j ${person.lateTotal%60}m<small>${person.lateDays} hari ekuivalen (8 jam/hari)</small></td><td><strong>${person.rate.toFixed(1)}%</strong><div class="rate-track"><div class="rate-fill" style="width:${person.rate}%"></div></div></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Belum ada data peserta.</td></tr>'}
-    function shiftMonth(dateKeyValue,months){const date=new Date(`${dateKeyValue}T00:00:00Z`),day=date.getUTCDate();date.setUTCDate(1);date.setUTCMonth(date.getUTCMonth()-months);const lastDay=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()+1,0)).getUTCDate();date.setUTCDate(Math.min(day,lastDay));return date.toISOString().slice(0,10)}
-    function selectedRange(){const preset=document.getElementById('period').value,today=todayKey();if(preset==='custom')return{from:document.getElementById('dateFrom').value,to:document.getElementById('dateTo').value};if(preset==='1m')return{from:shiftMonth(today,1),to:today};if(preset==='3m')return{from:shiftMonth(today,3),to:today};if(preset==='year')return{from:`${today.slice(0,4)}-01-01`,to:`${today.slice(0,4)}-12-31`};return{from:'',to:''}}
-    function syncRangeInputs(){const preset=document.getElementById('period').value,range=selectedRange();if(preset!=='custom'){document.getElementById('dateFrom').value=range.from;document.getElementById('dateTo').value=range.to}}
-    function filterRecords(records){const range=selectedRange(),status=document.getElementById('filter').value,query=document.getElementById('search').value.trim().toLowerCase();return records.filter(record=>{const date=dateKey(record.date);return(!range.from||date>=range.from)&&(!range.to||date<=range.to)&&(!status||record.status===status)&&(!query||`${record.name||''} ${record.department||''}`.toLowerCase().includes(query))}).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)))}
-    function renderHistory(records){currentFilteredRecords=filterRecords(records);const from=document.getElementById('period').value==='custom'?document.getElementById('dateFrom').value:selectedRange().from,to=document.getElementById('period').value==='custom'?document.getElementById('dateTo').value:selectedRange().to;document.getElementById('subtitle').textContent=`Menampilkan ${currentFilteredRecords.length} dari ${records.length} data${from||to?` · ${from||'awal'} s/d ${to||'sekarang'}`:''}`;document.getElementById('rows').innerHTML=currentFilteredRecords.length?currentFilteredRecords.map(record=>{const created=new Date(record.createdAt),time=Number.isNaN(created.getTime())?'-':created.toLocaleTimeString('id-ID',{timeZone:'Asia/Makassar'}),statusClass=String(record.status||'').toLowerCase().replace(/\s+/g,'-');return`<tr><td>${record.photo?`<img class="thumb" src="${esc(photoUrl(record.photo))}" alt="Foto ${esc(record.name)}" onclick="showPhoto(this.src)" onerror="this.outerHTML='<span class=photo-missing>Foto tidak dapat dimuat</span>'">`:'<span class="photo-missing">Foto belum tersimpan</span>'}</td><td>${esc(displayDate(record))}<br><small>${esc(time)}</small></td><td><strong>${esc(record.name)}</strong></td><td>${esc(record.department)}</td><td><span class="badge ${esc(statusClass)}">${esc(record.status)}</span></td><td>${['Tidak Hadir','Ijin','Terlambat'].includes(record.status)?esc(record.reason)||'-':'-'}</td><td>${record.supportingDocument?`<a href="${esc(record.supportingDocument)}" target="_blank" rel="noopener noreferrer">Lihat bukti</a>`:'-'}</td></tr>`}).join(''):'<tr><td colspan="7" class="empty">Tidak ada data absensi pada filter ini.</td></tr>'}
-    async function render(){try{const records=await getRecords();currentRecords=records;document.getElementById('total').textContent=records.length;document.getElementById('hadir').textContent=records.filter(r=>['Hadir','Hadir Pulang'].includes(r.status)).length;document.getElementById('tidakHadir').textContent=records.filter(r=>r.status==='Tidak Hadir').length;document.getElementById('other').textContent=records.filter(r=>['Ijin','Terlambat','Hadir Terlambat','Terlambat Pulang'].includes(r.status)).length;renderAnalytics(records);renderIndividualAnalytics(records);renderParticipants(records);renderHistory(records);const summaries=absenceSummary(records);document.getElementById('sanctions').innerHTML=summaries.length?summaries.map(summary=>`<div class="sanction"><strong>${esc(summary.name)}</strong>: ${summary.total} hari setara tidak hadir (${summary.absenceDays} hari tercatat + ${summary.lateDays} hari dari akumulasi keterlambatan). Maksimal ${summary.maxRun} hari tidak hadir berturut-turut. Status: <span class="${summary.level==='Belum ada sanksi'?'':'danger'}">${esc(summary.level)}</span></div>`).join(''):'<div class="sanction">Belum ada peserta dengan status Tidak Hadir atau akumulasi keterlambatan.</div>'}catch(error){document.getElementById('subtitle').textContent=`Gagal memuat data: ${error.message}`;document.getElementById('rows').innerHTML='<tr><td colspan="7" class="empty">Data tidak dapat dimuat. Periksa konfigurasi Apps Script.</td></tr>';document.getElementById('personRows').innerHTML='<tr><td colspan="6" class="empty">Data tidak dapat dimuat.</td></tr>';document.getElementById('personAnalysisContent').innerHTML=`<div class="empty">Analisis individu gagal dimuat: ${esc(error.message)}</div>`}}
-    function showPhoto(src){const image=document.getElementById('modalImg'),error=document.getElementById('photoError');image.style.display='block';error.hidden=true;image.onerror=()=>{image.style.display='none';error.hidden=false};image.src=src;document.getElementById('modal').classList.add('open')}
-    function csvCell(value){let text=String(value==null?'':value);if(/^[=+\-@]/.test(text))text="'"+text;return`"${text.replace(/"/g,'""')}"`}
-    function exportCSV(){const headers=['Tanggal','Jam','Nama','Jurusan / Prodi','Keterangan','Alasan','Bukti pendukung'];const lines=[headers,...currentFilteredRecords.map(record=>{const created=new Date(record.createdAt);return[dateKey(record.date),Number.isNaN(created.getTime())?'':created.toLocaleTimeString('id-ID',{timeZone:'Asia/Makassar'}),record.name,record.department,record.status,record.reason,record.supportingDocument]} )].map(row=>row.map(csvCell).join(',')).join('\r\n');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob(['\uFEFF',lines],{type:'text/csv;charset=utf-8'}));link.download='riwayat-absensi.csv';link.click();URL.revokeObjectURL(link.href)}
-    document.getElementById('personAnalysisFilter').addEventListener('change',()=>renderIndividualAnalytics(currentRecords));document.getElementById('filter').addEventListener('change',render);document.getElementById('search').addEventListener('input',render);document.getElementById('period').addEventListener('change',()=>{syncRangeInputs();render()});['dateFrom','dateTo'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{document.getElementById('period').value='custom';render()}));document.getElementById('exportRecords').addEventListener('click',exportCSV);syncRangeInputs();function clock(){const n=new Date();document.getElementById('time').textContent=n.toLocaleTimeString('id-ID');document.getElementById('date').textContent=n.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}clock();setInterval(clock,1000);setInterval(render,15000);render();
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxv4WVmOSi1pYUwBWd1-SeLT6a14UyvsrgH1B2HR95T5Doq4nz5HHe_RznDMthUX6YDOA/exec';
+
+    let currentFilteredRecords = [];
+    let currentRecords = [];
+
+    async function getRecords(){
+      const response = await fetch(API_URL);
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.message || 'Data absensi tidak dapat dibaca');
+      return result.records || [];
+    }
+
+    const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function dateKey(value){
+      const text = String(value || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const date = new Date(text);
+      if (Number.isNaN(date.getTime())) return text;
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Makassar',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(date).reduce((res, p) => { res[p.type] = p.value; return res; }, {});
+      return `${parts.year}-${parts.month}-${parts.day}`;
+    }
+
+    function todayKey(){
+      return dateKey(new Date().toISOString());
+    }
+
+    function displayDate(record){
+      const key = dateKey(record.date || record.dateLabel);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return String(record.dateLabel || record.date || '-');
+      return new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Makassar',
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }).format(new Date(`${key}T12:00:00+08:00`));
+    }
+
+    function parseTimeMinutes(value){
+      if (!value) return null;
+      const text = String(value).trim();
+      const match = text.match(/(?:^|\s|T)(\d{1,2}):(\d{2})/);
+      if (match) return Number(match[1]) * 60 + Number(match[2]);
+      const date = new Date(text);
+      if (!Number.isNaN(date.getTime())) {
+        return date.getUTCHours() * 60 + date.getUTCMinutes();
+      }
+      return null;
+    }
+
+    function formatTime(value){
+      const text = String(value || '');
+      const match = text.match(/(?:^|\s|T)(\d{1,2}):(\d{2})/);
+      if (match) return `${match[1].padStart(2, '0')}:${match[2]}`;
+      const date = new Date(text);
+      return Number.isNaN(date.getTime()) ? text : new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'UTC',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      }).format(date);
+    }
+
+    function photoUrl(value){
+      const url = String(value || '');
+      if (url.includes('drive.google.com/thumbnail')) return url;
+      const match = url.match(/\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
+      return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600` : url;
+    }
+
+    function workingDay(date){
+      const d = new Date(`${date}T00:00:00Z`).getUTCDay();
+      return d !== 0 && d !== 6;
+    }
+
+    function isRecordOlderThan30Days(record){
+      const createdStr = record.createdAt || record.date;
+      if (!createdStr) return false;
+      const created = new Date(createdStr).getTime();
+      if (Number.isNaN(created)) return false;
+      const now = new Date().getTime();
+      return (now - created) > (30 * 24 * 60 * 60 * 1000);
+    }
+
+    /**
+     * Menghitung rekapan per peserta:
+     * - Kehadiran dihitung saat check out.
+     * - Jika tidak check out, total keterlambatan ditambah penalti 4 jam (240 menit).
+     * - 8 jam keterlambatan = setara 1 hari tidak hadir.
+     */
+    function participantSummaries(records){
+      const participants = new Map();
+
+      records.forEach(record => {
+        const name = String(record.name || 'Tanpa nama').trim();
+        const department = String(record.department || '').trim();
+        const key = `${name}\u0000${department}`;
+
+        if (!participants.has(key)) {
+          participants.set(key, {
+            name,
+            department,
+            recordsByDate: new Map()
+          });
+        }
+
+        const date = dateKey(record.date);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+        const person = participants.get(key);
+        if (!person.recordsByDate.has(date)) {
+          person.recordsByDate.set(date, []);
+        }
+        person.recordsByDate.get(date).push(record);
+      });
+
+      return Array.from(participants.values()).map(person => {
+        let presentDays = 0;
+        let absentDays = 0;
+        let leaveDays = 0;
+        let unclosedCount = 0;
+        let lateTotal = 0;
+        const daySummaries = [];
+
+        person.recordsByDate.forEach((dateRecords, date) => {
+          const hasAbsent = dateRecords.some(r => r.status === 'Tidak Hadir');
+          const hasLeave = dateRecords.some(r => r.status === 'Ijin');
+
+          const checkInRecord = dateRecords.find(r => 
+            r.attendanceType === 'Datang' || 
+            ['Hadir', 'Hadir Terlambat', 'Terlambat'].includes(r.status)
+          );
+          const checkOutRecord = dateRecords.find(r => 
+            r.attendanceType === 'Pulang' || 
+            ['Hadir Pulang', 'Terlambat Pulang'].includes(r.status)
+          );
+
+          if (hasAbsent && !checkInRecord && !checkOutRecord) {
+            absentDays++;
+            daySummaries.push({ date, type: 'absent', lateMinutes: 0 });
+            return;
+          }
+
+          if (hasLeave && !checkInRecord && !checkOutRecord) {
+            leaveDays++;
+            daySummaries.push({ date, type: 'leave', lateMinutes: 0 });
+            return;
+          }
+
+          const attended = Boolean(checkInRecord || checkOutRecord);
+          if (attended) {
+            presentDays++;
+
+            let arrivalLateMinutes = 0;
+            if (checkInRecord) {
+              const arrMins = parseTimeMinutes(checkInRecord.arrival || checkInRecord.createdAt);
+              if (arrMins != null) {
+                if (arrMins > 8 * 60) {
+                  arrivalLateMinutes = arrMins - 8 * 60;
+                } else if (['Terlambat', 'Hadir Terlambat'].includes(checkInRecord.status)) {
+                  arrivalLateMinutes = Math.max(1, arrMins - 8 * 60);
+                }
+              } else if (['Terlambat', 'Hadir Terlambat'].includes(checkInRecord.status)) {
+                arrivalLateMinutes = 30;
+              }
+            }
+
+            const hasCheckedOut = Boolean(checkOutRecord);
+            let unclosedPenalty = 0;
+            if (!hasCheckedOut) {
+              unclosedCount++;
+              // Sesuai aturan: jika tidak check out maka total terlambat jadi 4 jam (240 menit)
+              unclosedPenalty = 240;
+            }
+
+            const totalDayLate = arrivalLateMinutes + unclosedPenalty;
+            lateTotal += totalDayLate;
+
+            daySummaries.push({
+              date,
+              type: 'present',
+              hasCheckIn: Boolean(checkInRecord),
+              hasCheckOut,
+              arrivalLateMinutes,
+              unclosedPenalty,
+              totalLateMinutes: totalDayLate,
+              checkInRecord,
+              checkOutRecord
+            });
+          }
+        });
+
+        // 8 jam terlambat = 480 menit = 1 hari setara tidak hadir
+        const lateDays = lateTotal / 480;
+        const sanctionLateDays = Math.floor(lateTotal / 480);
+        const effectivePresent = Math.max(0, presentDays - lateDays);
+        const trackedDays = presentDays + absentDays + leaveDays;
+        const rate = trackedDays > 0 ? (effectivePresent / trackedDays) * 100 : 0;
+
+        return {
+          ...person,
+          present: presentDays,
+          absent: absentDays,
+          leave: leaveDays,
+          unclosedCount,
+          lateTotal,
+          lateDays,
+          sanctionLateDays,
+          effectivePresent,
+          trackedDays,
+          rate,
+          daySummaries
+        };
+      }).sort((a, b) => a.name.localeCompare(b.name, 'id') || a.department.localeCompare(b.department, 'id'));
+    }
+
+    function absenceSummary(records){
+      const summaries = participantSummaries(records);
+      return summaries.filter(p => p.absent > 0 || p.lateTotal > 0).map(person => {
+        const dates = [];
+        person.daySummaries.forEach(ds => {
+          if (ds.type === 'absent' && workingDay(ds.date)) {
+            dates.push(ds.date);
+          }
+        });
+        dates.sort();
+
+        let maxRun = 0, run = 0, previous = null;
+        dates.forEach(date => {
+          if (previous) {
+            const next = new Date(`${previous}T00:00:00Z`);
+            do {
+              next.setUTCDate(next.getUTCDate() + 1);
+            } while (!workingDay(next.toISOString().slice(0, 10)));
+            run = next.toISOString().slice(0, 10) === date ? run + 1 : 1;
+          } else {
+            run = 1;
+          }
+          previous = date;
+          maxRun = Math.max(maxRun, run);
+        });
+
+        const total = person.absent + person.sanctionLateDays;
+        let level = total >= 21 ? 'SP3 / Surat Penarikan'
+          : total >= 14 ? 'SP2'
+          : total >= 7 ? 'SP1'
+          : total >= 3 ? 'Punishment'
+          : 'Belum ada sanksi';
+        if (maxRun >= 10) level = 'Surat Penarikan';
+
+        return {
+          name: person.name,
+          total,
+          absenceDays: person.absent,
+          lateDays: person.sanctionLateDays,
+          lateMinutesTotal: person.lateTotal,
+          unclosedCount: person.unclosedCount,
+          maxRun,
+          level
+        };
+      });
+    }
+
+    function renderAnalytics(records){
+      const groups = [
+        { label: 'Hadir', statuses: ['Hadir', 'Hadir Pulang'], color: 'green' },
+        { label: 'Terlambat', statuses: ['Terlambat', 'Hadir Terlambat', 'Terlambat Pulang'], color: 'orange' },
+        { label: 'Ijin', statuses: ['Ijin'], color: 'yellow' },
+        { label: 'Tidak Hadir', statuses: ['Tidak Hadir'], color: 'red' }
+      ];
+      const total = records.length;
+      document.getElementById('statusChart').innerHTML = groups.map(group => {
+        const items = records.filter(r => group.statuses.includes(r.status));
+        const percent = total ? Math.round(items.length / total * 100) : 0;
+        return `<div class="bar-row"><span>${group.label}</span><div class="bar-track"><div class="bar-fill bar-${group.color}" style="width:${percent}%"></div></div><b>${items.length}</b></div>`;
+      }).join('');
+
+      const daily = {};
+      records.forEach(r => {
+        const date = dateKey(r.date);
+        daily[date] = (daily[date] || 0) + 1;
+      });
+      const days = Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0])).slice(-10);
+      const max = Math.max(...days.map(item => item[1]), 1);
+      document.getElementById('dailyChart').innerHTML = days.length ? days.map(([date, count]) =>
+        `<div class="day-column" title="${esc(date)}: ${count} absensi"><span class="day-count">${count}</span><div class="day-bar" style="height:${Math.max(4, count / max * 145)}px"></div><small>${esc(date.slice(5))}</small></div>`
+      ).join('') : '<span class="empty">Belum ada data harian.</span>';
+
+      document.getElementById('detailCards').innerHTML = groups.map(group => {
+        const items = records.filter(r => group.statuses.includes(r.status));
+        const details = items.length ? items.map(r => `<div><b>${esc(r.name)}</b><br>${esc(displayDate(r))} · ${esc(r.status)}</div>`).join('') : '<div>Belum ada data.</div>';
+        return `<article class="detail-card ${group.color}"><h3>${group.label}</h3><div class="detail-number">${items.length}</div><div class="detail-list">${details}</div></article>`;
+      }).join('');
+    }
+
+    function personAnalysisKey(person){
+      return JSON.stringify([person.name, person.department]);
+    }
+
+    function renderIndividualAnalytics(records){
+      const select = document.getElementById('personAnalysisFilter');
+      const container = document.getElementById('personAnalysisContent');
+      const people = participantSummaries(records);
+      const previous = select.value;
+
+      if (!people.length) {
+        select.innerHTML = '<option value="">Belum ada peserta</option>';
+        container.innerHTML = '<div class="empty">Belum ada data untuk dianalisis.</div>';
+        return;
+      }
+
+      select.innerHTML = people.map(person =>
+        `<option value="${esc(personAnalysisKey(person))}">${esc(person.name)}${person.department ? ` — ${esc(person.department)}` : ''}</option>`
+      ).join('');
+
+      const selected = people.find(person => personAnalysisKey(person) === previous) || people[0];
+      select.value = personAnalysisKey(selected);
+
+      const personRecords = records.filter(record =>
+        String(record.name || 'Tanpa nama').trim() === selected.name &&
+        String(record.department || '').trim() === selected.department
+      );
+
+      const groups = [
+        { label: 'Hadir', statuses: ['Hadir', 'Hadir Pulang'], color: 'green' },
+        { label: 'Terlambat', statuses: ['Terlambat', 'Hadir Terlambat', 'Terlambat Pulang'], color: 'orange' },
+        { label: 'Ijin', statuses: ['Ijin'], color: 'yellow' },
+        { label: 'Tidak Hadir', statuses: ['Tidak Hadir'], color: 'red' }
+      ];
+
+      const chart = groups.map(group => {
+        const count = personRecords.filter(record => group.statuses.includes(record.status)).length;
+        const percent = personRecords.length ? Math.round(count / personRecords.length * 100) : 0;
+        return `<div class="bar-row"><span>${group.label}</span><div class="bar-track"><div class="bar-fill bar-${group.color}" style="width:${percent}%"></div></div><b>${count}</b></div>`;
+      }).join('');
+
+      const daily = {};
+      personRecords.forEach(record => {
+        const date = dateKey(record.date);
+        daily[date] = (daily[date] || 0) + 1;
+      });
+      const days = Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0])).slice(-10);
+      const max = Math.max(...days.map(day => day[1]), 1);
+      const trend = days.length ? days.map(([date, count]) =>
+        `<div class="day-column" title="${esc(date)}: ${count} absensi"><span class="day-count">${count}</span><div class="day-bar" style="height:${Math.max(4, count / max * 145)}px"></div><small>${esc(date.slice(5))}</small></div>`
+      ).join('') : '<span class="empty">Belum ada tren absensi.</span>';
+
+      const history = personRecords.slice().sort((a, b) =>
+        dateKey(b.date).localeCompare(dateKey(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt))
+      );
+
+      const checkoutMap = new Map();
+      selected.daySummaries.forEach(ds => {
+        checkoutMap.set(ds.date, ds);
+      });
+
+      container.innerHTML = `
+        <div class="person-stats">
+          <div class="person-stat"><small>Hari hadir tercatat</small><strong>${selected.present}</strong></div>
+          <div class="person-stat"><small>Hari hadir efektif</small><strong>${selected.effectivePresent.toFixed(1)}</strong></div>
+          <div class="person-stat"><small>Tidak hadir + setara terlambat</small><strong>${selected.absent + selected.sanctionLateDays}</strong><span style="font-size:10px;color:var(--muted)">(${selected.absent} absen + ${selected.sanctionLateDays} setara)</span></div>
+          <div class="person-stat"><small>Total terlambat</small><strong>${Math.floor(selected.lateTotal / 60)}j ${selected.lateTotal % 60}m</strong><span style="font-size:10px;color:var(--muted)">${selected.unclosedCount > 0 ? `${selected.unclosedCount}x tanpa checkout (+${selected.unclosedCount * 4}j)` : 'selesai checkout'}</span></div>
+          <div class="person-stat"><small>Persentase hadir</small><strong>${selected.rate.toFixed(1)}%</strong></div>
+        </div>
+        <div class="analysis-grid">
+          <div class="chart-box"><h3>Distribusi Keterangan (${personRecords.length} catatan)</h3>${chart}</div>
+          <div class="chart-box"><h3>Tren Absensi Harian</h3><div class="daily-chart">${trend}</div></div>
+        </div>
+        <h3>Rincian Riwayat ${esc(selected.name)}</h3>
+        <div class="person-history-wrap">
+          <table class="table person-history">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Jam</th>
+                <th>Jenis Absensi</th>
+                <th>Keterangan</th>
+                <th>Status Check-out</th>
+                <th>Alasan</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${history.length ? history.map(record => {
+                const dKey = dateKey(record.date);
+                const ds = checkoutMap.get(dKey);
+                let checkoutBadge = '-';
+                if (ds && ds.type === 'present') {
+                  checkoutBadge = ds.hasCheckOut
+                    ? '<span class="badge-completed">✓ Sudah Check Out</span>'
+                    : '<span class="badge-unclosed">⚠ Tidak Check Out (+4j)</span>';
+                }
+                const badgeClass = String(record.status || '').toLowerCase().replace(/\s+/g, '-');
+                return `<tr>
+                  <td>${esc(displayDate(record))}</td>
+                  <td>${esc(formatTime(record.arrival || record.createdAt))}</td>
+                  <td>${esc(record.attendanceType || '-')}</td>
+                  <td><span class="badge ${esc(badgeClass)}">${esc(record.status)}</span></td>
+                  <td>${checkoutBadge}</td>
+                  <td>${esc(record.reason || '-')}</td>
+                </tr>`;
+              }).join('') : '<tr><td colspan="6" class="empty">Belum ada rincian absensi.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderParticipants(records){
+      const people = participantSummaries(records);
+      document.getElementById('personRows').innerHTML = people.length ? people.map(person => {
+        const rateFormatted = person.rate.toFixed(1);
+        const unclosedNotice = person.unclosedCount > 0
+          ? ` · ${person.unclosedCount}x tanpa checkout (+${person.unclosedCount * 4}j)`
+          : '';
+        return `<tr>
+          <td><strong>${esc(person.name)}</strong><small>${esc(person.department)}</small></td>
+          <td>${person.present} hari<small>${person.effectivePresent.toFixed(1)} hari efektif${person.unclosedCount > 0 ? ` (${person.unclosedCount}x tanpa checkout)` : ''}</small></td>
+          <td>${person.absent + person.sanctionLateDays} hari<small>${person.absent} hari absen + ${person.sanctionLateDays} setara terlambat</small></td>
+          <td>${person.leave} hari</td>
+          <td><strong>${Math.floor(person.lateTotal / 60)}j ${person.lateTotal % 60}m</strong><small>${(person.lateTotal / 480).toFixed(1)} hari setara tidak hadir (8 jam/hari)${unclosedNotice}</small></td>
+          <td>
+            <strong>${rateFormatted}%</strong>
+            <div class="rate-track"><div class="rate-fill" style="width:${Math.min(100, person.rate)}%"></div></div>
+          </td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="6" class="empty">Belum ada data peserta.</td></tr>';
+    }
+
+    function shiftMonth(dateKeyValue, months){
+      const date = new Date(`${dateKeyValue}T00:00:00Z`);
+      const day = date.getUTCDate();
+      date.setUTCDate(1);
+      date.setUTCMonth(date.getUTCMonth() - months);
+      const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+      date.setUTCDate(Math.min(day, lastDay));
+      return date.toISOString().slice(0, 10);
+    }
+
+    function selectedRange(){
+      const preset = document.getElementById('period').value;
+      const today = todayKey();
+      if (preset === 'custom') return { from: document.getElementById('dateFrom').value, to: document.getElementById('dateTo').value };
+      if (preset === '1m') return { from: shiftMonth(today, 1), to: today };
+      if (preset === '3m') return { from: shiftMonth(today, 3), to: today };
+      if (preset === 'year') return { from: `${today.slice(0, 4)}-01-01`, to: `${today.slice(0, 4)}-12-31` };
+      return { from: '', to: '' };
+    }
+
+    function syncRangeInputs(){
+      const preset = document.getElementById('period').value;
+      const range = selectedRange();
+      if (preset !== 'custom') {
+        document.getElementById('dateFrom').value = range.from;
+        document.getElementById('dateTo').value = range.to;
+      }
+    }
+
+    function filterRecords(records){
+      const range = selectedRange();
+      const status = document.getElementById('filter').value;
+      const query = document.getElementById('search').value.trim().toLowerCase();
+
+      return records.filter(record => {
+        const date = dateKey(record.date);
+        return (!range.from || date >= range.from) &&
+               (!range.to || date <= range.to) &&
+               (!status || record.status === status) &&
+               (!query || `${record.name || ''} ${record.department || ''}`.toLowerCase().includes(query));
+      }).sort((a, b) => String(b.createdAt || b.date).localeCompare(String(a.createdAt || a.date)));
+    }
+
+    function renderHistory(records){
+      currentFilteredRecords = filterRecords(records);
+      const from = document.getElementById('period').value === 'custom' ? document.getElementById('dateFrom').value : selectedRange().from;
+      const to = document.getElementById('period').value === 'custom' ? document.getElementById('dateTo').value : selectedRange().to;
+      document.getElementById('subtitle').textContent = `Menampilkan ${currentFilteredRecords.length} dari ${records.length} data${from || to ? ` · ${from || 'awal'} s/d ${to || 'sekarang'}` : ''}`;
+
+      // Build checkout map for current records to determine checkout status
+      const participants = participantSummaries(records);
+      const checkoutMap = new Map();
+      participants.forEach(p => {
+        p.daySummaries.forEach(ds => {
+          checkoutMap.set(`${p.name}\u0000${p.department}\u0000${ds.date}`, ds);
+        });
+      });
+
+      document.getElementById('rows').innerHTML = currentFilteredRecords.length ? currentFilteredRecords.map(record => {
+        const created = new Date(record.createdAt);
+        const time = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '-') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
+        const statusClass = String(record.status || '').toLowerCase().replace(/\s+/g, '-');
+        const dKey = dateKey(record.date);
+        const pKey = `${String(record.name || '').trim()}\u0000${String(record.department || '').trim()}\u0000${dKey}`;
+        const daySummary = checkoutMap.get(pKey);
+
+        let checkoutBadge = '-';
+        if (daySummary && daySummary.type === 'present') {
+          checkoutBadge = daySummary.hasCheckOut
+            ? '<span class="badge-completed">✓ Selesai Check Out</span>'
+            : '<span class="badge-unclosed">⚠ Tidak Check Out (+4j)</span>';
+        }
+
+        const olderThan30 = isRecordOlderThan30Days(record);
+        let photoCell = '<span class="photo-missing">Foto belum tersimpan</span>';
+        if (record.photo) {
+          photoCell = `<img class="thumb" src="${esc(photoUrl(record.photo))}" alt="Foto ${esc(record.name)}" onclick="showPhoto(this.src, ${olderThan30})" onerror="this.outerHTML='<span class=photo-archived title=\'Berkas foto di Google Drive dibersihkan berkala setelah 30 hari. Data absensi tetap tersimpan.\'>📁 ${olderThan30 ? 'Berkas >30 hari' : 'Foto tidak tersedia'}</span>'">`;
+        }
+
+        const proofDoc = record.supportingDocument || record.proof;
+        let proofCell = '-';
+        if (proofDoc) {
+          proofCell = `<a href="${esc(proofDoc)}" target="_blank" rel="noopener noreferrer">📄 Lihat Bukti</a>`;
+        } else if (record.photo) {
+          proofCell = `<a href="${esc(photoUrl(record.photo))}" target="_blank" rel="noopener noreferrer">📷 Foto</a>`;
+        }
+
+        const reasonDisplay = ['Tidak Hadir', 'Ijin', 'Terlambat', 'Hadir Terlambat'].includes(record.status)
+          ? esc(record.reason) || '-'
+          : '-';
+
+        return `<tr>
+          <td>${photoCell}</td>
+          <td>${esc(displayDate(record))}<br><small>${esc(time)} WITA</small></td>
+          <td><strong>${esc(record.name)}</strong></td>
+          <td>${esc(record.department)}</td>
+          <td><span class="badge ${record.attendanceType === 'Pulang' ? 'hadir-pulang' : 'hadir'}">${esc(record.attendanceType || 'Datang')}</span></td>
+          <td><span class="badge ${esc(statusClass)}">${esc(record.status)}</span></td>
+          <td>${reasonDisplay}</td>
+          <td>${proofCell}</td>
+          <td>${checkoutBadge}</td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="9" class="empty">Tidak ada data absensi pada filter ini.</td></tr>';
+    }
+
+    async function render(){
+      try {
+        const records = await getRecords();
+        currentRecords = records;
+
+        const participants = participantSummaries(records);
+        const totalLateMinutes = participants.reduce((sum, p) => sum + p.lateTotal, 0);
+        const totalLateHours = Math.floor(totalLateMinutes / 60);
+        const totalLateRemainingMinutes = totalLateMinutes % 60;
+
+        document.getElementById('total').textContent = records.length;
+        document.getElementById('hadir').textContent = records.filter(r => ['Hadir', 'Hadir Pulang'].includes(r.status)).length;
+        document.getElementById('totalTerlambat').textContent = `${totalLateHours}j ${totalLateRemainingMinutes}m`;
+        document.getElementById('ijin').textContent = records.filter(r => r.status === 'Ijin').length;
+        document.getElementById('tidakHadir').textContent = records.filter(r => r.status === 'Tidak Hadir').length;
+
+        renderAnalytics(records);
+        renderIndividualAnalytics(records);
+        renderParticipants(records);
+        renderHistory(records);
+
+        const summaries = absenceSummary(records);
+        document.getElementById('sanctions').innerHTML = summaries.length ? summaries.map(summary =>
+          `<div class="sanction">
+            <strong>${esc(summary.name)}</strong>: ${summary.total} hari setara tidak hadir 
+            (${summary.absenceDays} hari tercatat + ${summary.lateDays} hari dari akumulasi ${Math.floor(summary.lateMinutesTotal / 60)}j keterlambatan${summary.unclosedCount > 0 ? `, termasuk ${summary.unclosedCount}x tidak check out` : ''}). 
+            Maksimal ${summary.maxRun} hari tidak hadir berturut-turut. Status: 
+            <span class="${summary.level === 'Belum ada sanksi' ? '' : 'danger'}">${esc(summary.level)}</span>
+          </div>`
+        ).join('') : '<div class="sanction">Belum ada peserta dengan status Tidak Hadir atau akumulasi keterlambatan.</div>';
+      } catch (error) {
+        document.getElementById('subtitle').textContent = `Gagal memuat data: ${error.message}`;
+        document.getElementById('rows').innerHTML = '<tr><td colspan="9" class="empty">Data tidak dapat dimuat. Periksa konfigurasi Apps Script.</td></tr>';
+        document.getElementById('personRows').innerHTML = '<tr><td colspan="6" class="empty">Data tidak dapat dimuat.</td></tr>';
+        document.getElementById('personAnalysisContent').innerHTML = `<div class="empty">Analisis individu gagal dimuat: ${esc(error.message)}</div>`;
+      }
+    }
+
+    function showPhoto(src, isArchived){
+      const image = document.getElementById('modalImg');
+      const error = document.getElementById('photoError');
+      image.style.display = 'block';
+      error.hidden = true;
+
+      image.onerror = () => {
+        image.style.display = 'none';
+        error.hidden = false;
+        error.textContent = isArchived
+          ? 'Berkas foto telah dibersihkan dari Google Drive sesuai kebijakan penyimpanan 30 hari. Data rekapan absensi peserta tetap tersimpan secara permanen di Spreadsheet dan Dashboard.'
+          : 'Foto tidak tersedia atau belum dapat diakses dari Google Drive. Pastikan izin berbagi berkas Google Drive sudah benar.';
+      };
+      image.src = src;
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function csvCell(value){
+      let text = String(value == null ? '' : value);
+      if (/^[=+\-@]/.test(text)) text = "'" + text;
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    /**
+     * Ekspor ke Excel (.xls) dengan kolom-kolom yang terpisah secara sempurna:
+     * Tanggal, Jam, Nama, Jurusan / Prodi, Jenis Absensi, Keterangan, Alasan, Bukti Pendukung, Status Check-out, Lokasi.
+     */
+    function exportExcel(){
+      if (!currentFilteredRecords.length) {
+        alert('Tidak ada data absensi untuk diekspor.');
+        return;
+      }
+
+      const participants = participantSummaries(currentRecords);
+      const checkoutMap = new Map();
+      participants.forEach(p => {
+        p.daySummaries.forEach(ds => {
+          checkoutMap.set(`${p.name}\u0000${p.department}\u0000${ds.date}`, ds);
+        });
+      });
+
+      const rowsHtml = currentFilteredRecords.map((record, index) => {
+        const dKey = dateKey(record.date);
+        const pKey = `${String(record.name || '').trim()}\u0000${String(record.department || '').trim()}\u0000${dKey}`;
+        const daySummary = checkoutMap.get(pKey);
+
+        let checkoutStatus = '-';
+        let keterlambatanDesc = '-';
+        if (daySummary && daySummary.type === 'present') {
+          if (daySummary.hasCheckOut) {
+            checkoutStatus = 'Sudah Check Out';
+            keterlambatanDesc = daySummary.arrivalLateMinutes > 0 ? `${daySummary.arrivalLateMinutes}m (datang terlambat)` : 'Tepat Waktu (0m)';
+          } else {
+            checkoutStatus = 'Tidak Check Out';
+            keterlambatanDesc = `${daySummary.totalLateMinutes}m (${daySummary.arrivalLateMinutes}m datang + 240m/4j tanpa check out)`;
+          }
+        }
+
+        const created = new Date(record.createdAt);
+        const timeFormatted = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '-') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
+        const proofUrl = record.supportingDocument || record.proof || record.photo || '';
+        const proofCell = proofUrl ? `<a href="${esc(proofUrl)}">${esc(proofUrl)}</a>` : '-';
+        const reasonText = ['Tidak Hadir', 'Ijin', 'Terlambat', 'Hadir Terlambat'].includes(record.status) ? (record.reason || '-') : '-';
+
+        return `<tr>
+          <td style="text-align:center">${index + 1}</td>
+          <td class="date" style="text-align:center">${esc(dKey)}</td>
+          <td class="time" style="text-align:center">${esc(timeFormatted)}</td>
+          <td class="text"><strong>${esc(record.name)}</strong></td>
+          <td class="text">${esc(record.department)}</td>
+          <td class="text" style="text-align:center">${esc(record.attendanceType || '-')}</td>
+          <td class="text" style="text-align:center">${esc(record.status)}</td>
+          <td class="text">${esc(reasonText)}</td>
+          <td class="text">${proofCell}</td>
+          <td class="text" style="text-align:center">${esc(checkoutStatus)}</td>
+          <td class="text">${esc(keterlambatanDesc)}</td>
+          <td class="text">${esc(record.location || '-')}</td>
+        </tr>`;
+      }).join('');
+
+      const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!--[if gte mso 9]>
+  <xml>
+    <x:ExcelWorkbook>
+      <x:ExcelWorksheets>
+        <x:ExcelWorksheet>
+          <x:Name>Riwayat Absensi</x:Name>
+          <x:WorksheetOptions>
+            <x:DisplayGridlines/>
+          </x:WorksheetOptions>
+        </x:ExcelWorksheet>
+      </x:ExcelWorksheets>
+    </x:ExcelWorkbook>
+  </xml>
+  <![endif]-->
+  <style>
+    table { border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 11pt; }
+    th { background-color: #07529a; color: #ffffff; font-weight: bold; border: 0.5pt solid #cccccc; padding: 8px; text-align: center; }
+    td { border: 0.5pt solid #cccccc; padding: 6px; vertical-align: middle; }
+    .text { mso-number-format: "\\@"; }
+    .date { mso-number-format: "yyyy-mm-dd"; }
+    .time { mso-number-format: "hh:mm"; }
+  </style>
+</head>
+<body>
+  <h2>REKAP RIWAYAT ABSENSI MAGANG / PKL</h2>
+  <p>Tanggal Ekspor: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Tanggal</th>
+        <th>Jam</th>
+        <th>Nama</th>
+        <th>Jurusan / Prodi</th>
+        <th>Jenis Absensi</th>
+        <th>Keterangan</th>
+        <th>Alasan</th>
+        <th>Bukti Pendukung</th>
+        <th>Status Check-out</th>
+        <th>Keterlambatan</th>
+        <th>Lokasi</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml}
+    </tbody>
+  </table>
+</body>
+</html>`;
+
+      const blob = new Blob(['\uFEFF', template], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `riwayat-absensi-${todayKey()}.xls`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function exportCSV(){
+      if (!currentFilteredRecords.length) {
+        alert('Tidak ada data absensi untuk diekspor.');
+        return;
+      }
+      const participants = participantSummaries(currentRecords);
+      const checkoutMap = new Map();
+      participants.forEach(p => {
+        p.daySummaries.forEach(ds => {
+          checkoutMap.set(`${p.name}\u0000${p.department}\u0000${ds.date}`, ds);
+        });
+      });
+
+      const headers = ['No', 'Tanggal', 'Jam', 'Nama', 'Jurusan / Prodi', 'Jenis Absensi', 'Keterangan', 'Alasan', 'Bukti Pendukung', 'Status Check-out', 'Keterlambatan', 'Lokasi'];
+      const lines = [
+        'sep=,',
+        headers.map(csvCell).join(','),
+        ...currentFilteredRecords.map((record, index) => {
+          const dKey = dateKey(record.date);
+          const pKey = `${String(record.name || '').trim()}\u0000${String(record.department || '').trim()}\u0000${dKey}`;
+          const daySummary = checkoutMap.get(pKey);
+
+          let checkoutStatus = '-';
+          let keterlambatanDesc = '-';
+          if (daySummary && daySummary.type === 'present') {
+            if (daySummary.hasCheckOut) {
+              checkoutStatus = 'Sudah Check Out';
+              keterlambatanDesc = daySummary.arrivalLateMinutes > 0 ? `${daySummary.arrivalLateMinutes}m` : '0m';
+            } else {
+              checkoutStatus = 'Tidak Check Out';
+              keterlambatanDesc = `${daySummary.totalLateMinutes}m (+240m/4j)`;
+            }
+          }
+
+          const created = new Date(record.createdAt);
+          const timeFormatted = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
+          const proofUrl = record.supportingDocument || record.proof || record.photo || '';
+          const reasonText = ['Tidak Hadir', 'Ijin', 'Terlambat', 'Hadir Terlambat'].includes(record.status) ? (record.reason || '') : '';
+
+          return [
+            index + 1,
+            dKey,
+            timeFormatted,
+            record.name,
+            record.department,
+            record.attendanceType || '',
+            record.status,
+            reasonText,
+            proofUrl,
+            checkoutStatus,
+            keterlambatanDesc,
+            record.location || ''
+          ].map(csvCell).join(',');
+        })
+      ].join('\r\n');
+
+      const blob = new Blob(['\uFEFF', lines], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `riwayat-absensi-${todayKey()}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    async function cleanupDriveFiles(){
+      const confirmed = confirm(
+        'Bersihkan berkas foto & bukti di Google Drive yang sudah melewati 30 hari?\n\n' +
+        '• Berkas foto/bukti dukung >30 hari akan dipindahkan ke tempat sampah Google Drive untuk menghemat kuota penyimpanan.\n' +
+        '• Data rekapan absensi (nama, tanggal, jurusan, alasan, status) TETAP TERSIMPAN AMAN di Google Sheets & Dashboard.\n\n' +
+        'Lanjutkan?'
+      );
+      if (!confirmed) return;
+
+      const btn = document.getElementById('cleanupDriveBtn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Membersihkan...';
+
+      try {
+        const response = await fetch(`${API_URL}?action=cleanup`);
+        const result = await response.json();
+        if (!result.ok) throw new Error(result.message || 'Gagal memproses pembersihan Google Drive.');
+        alert(`Sukses:\n${result.message}`);
+        render();
+      } catch (error) {
+        alert(`Pembersihan Google Drive gagal: ${error.message}\n\nPastikan Google Apps Script (Code.gs) telah diperbarui dan dideploy ulang.`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    document.getElementById('personAnalysisFilter').addEventListener('change', () => renderIndividualAnalytics(currentRecords));
+    document.getElementById('filter').addEventListener('change', render);
+    document.getElementById('search').addEventListener('input', render);
+    document.getElementById('period').addEventListener('change', () => { syncRangeInputs(); render(); });
+    ['dateFrom', 'dateTo'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+      document.getElementById('period').value = 'custom';
+      render();
+    }));
+    document.getElementById('exportExcel').addEventListener('click', exportExcel);
+    document.getElementById('exportCSV').addEventListener('click', exportCSV);
+    document.getElementById('cleanupDriveBtn').addEventListener('click', cleanupDriveFiles);
+
+    syncRangeInputs();
+
+    function clock(){
+      const n = new Date();
+      document.getElementById('time').textContent = n.toLocaleTimeString('id-ID');
+      document.getElementById('date').textContent = n.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    }
+    clock();
+    setInterval(clock, 1000);
+    setInterval(render, 15000);
+    render();
   </script>
 </body>
 </html>
