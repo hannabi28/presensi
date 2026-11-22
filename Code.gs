@@ -237,6 +237,7 @@ function cleanupOldFiles30Days() {
   const thirtyDaysInMillis = 30 * 24 * 60 * 60 * 1000;
   let deletedCount = 0;
   let skippedCount = 0;
+  const failures = [];
 
   while (files.hasNext()) {
     const file = files.next();
@@ -246,14 +247,20 @@ function cleanupOldFiles30Days() {
         file.setTrashed(true);
         deletedCount++;
       } catch (error) {
-        Logger.log('Gagal memindahkan file ke sampah: ' + file.getName() + ' - ' + error.message);
+        const failure = `${file.getName()}: ${error.message}`;
+        failures.push(failure);
+        Logger.log('Gagal memindahkan file ke sampah: ' + failure);
       }
     } else {
       skippedCount++;
     }
   }
 
-  Logger.log(`Pembersihan Drive selesai: ${deletedCount} berkas (>30 hari) dipindahkan ke tempat sampah. ${skippedCount} berkas berumur <= 30 hari dipertahankan.`);
+  const summary = `Pembersihan Drive selesai: ${deletedCount} berkas (>30 hari) dipindahkan ke tempat sampah. ${skippedCount} berkas berumur <= 30 hari dipertahankan.`;
+  Logger.log(summary);
+  if (failures.length) {
+    throw new Error(`${summary} ${failures.length} berkas gagal dibersihkan: ${failures.slice(0, 10).join('; ')}`);
+  }
   return { ok: true, deletedCount: deletedCount, skippedCount: skippedCount };
 }
 

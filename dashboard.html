@@ -1,114 +1,921 @@
 <!doctype html>
 <html lang="id">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard Admin - Absensi PKL</title>
   <style>
-    :root{--blue:#07529a;--yellow:#f4c51b;--ink:#12233d;--muted:#6d7f99;--line:#dbe5f1;--bg:#edf5ff;--green:#19a85a;--red:#d73d4f;--orange:#e88a14}
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:linear-gradient(120deg,#063d76,#087be5);min-height:100vh}
-    header{height:92px;background:var(--yellow);display:flex;align-items:center;padding:0 max(24px,calc((100% - 1240px)/2));gap:18px}
-    header img{width:128px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:5px}
-    header h1{font-size:21px;margin:0;color:#073b72}header p{font-size:13px;margin:5px 0 0;color:#273d5d}
-    .header-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
-    .clock{background:#fff3c4;border-radius:11px;padding:9px 16px;text-align:center;font-size:12px;color:#57708f}
-    .clock strong{display:block;font-size:15px;color:#173b67}
-    .refresh{border:0;background:#073b72;color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}
-    .cleanup-button{border:0;background:#d73d4f;color:#fff;border-radius:10px;padding:12px 16px;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-    .cleanup-button:hover{filter:brightness(.92)}
-    main{max-width:1240px;margin:32px auto;padding:0 20px 50px}
-    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
-    .stat,.panel{background:#fff;border-radius:18px;box-shadow:0 10px 30px #032d5b2b}
-    .stat{padding:20px 22px;position:relative}
-    .stat small{color:var(--muted);font-weight:600;font-size:12px}
-    .stat strong{display:block;font-size:28px;margin-top:8px;line-height:1.15}
-    .stat span{position:absolute;right:18px;top:20px;font-size:24px;background:#fff4cd;border-radius:12px;padding:8px}
-    .stat.green span{background:#dff8d8}
-    .stat.red span{background:#ffe3e5}
-    .stat.orange span{background:#ffebcf}
-    .stat.yellow span{background:#fff9db}
-    .panel{margin-top:22px;padding:25px}
-    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
-    .panel h2{font-size:18px;margin:0}.panel p{font-size:13px;color:var(--muted);margin:6px 0 0}
-    .analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .chart-box{border:1px solid var(--line);border-radius:13px;padding:18px}
-    .chart-box h3{margin:0 0 16px;font-size:14px}
-    .bar-row{display:grid;grid-template-columns:112px 1fr 35px;align-items:center;gap:9px;margin:13px 0;font-size:12px}
-    .bar-track{height:13px;background:#edf2f8;border-radius:20px;overflow:hidden}
-    .bar-fill{height:100%;border-radius:20px;min-width:2px}
-    .bar-green{background:#20ae61}.bar-red{background:#dc4d5c}.bar-yellow{background:#e8ae1b}.bar-orange{background:#e98628}
-    .daily-chart{height:190px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line);padding:15px 3px 0}
-    .day-column{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:24px}
-    .day-bar{width:100%;max-width:34px;background:#1681ef;border-radius:6px 6px 0 0;min-height:2px}
-    .day-column small{font-size:10px;color:var(--muted);white-space:nowrap;transform:rotate(-35deg);transform-origin:top center;margin-top:8px}
-    .day-count{font-size:10px;font-weight:700;color:#126dc6}
-    .detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .detail-card{border:1px solid var(--line);border-top:4px solid #20ae61;border-radius:11px;padding:15px;min-width:0}
-    .detail-card.red{border-top-color:#dc4d5c}.detail-card.yellow{border-top-color:#e8ae1b}.detail-card.orange{border-top-color:#e98628}
-    .detail-card h3{font-size:13px;margin:0}.detail-number{font-size:28px;font-weight:800;margin:8px 0}
-    .detail-list{border-top:1px solid var(--line);padding-top:8px;max-height:150px;overflow:auto}
-    .detail-list div{font-size:11px;padding:6px 0;border-bottom:1px dashed var(--line);line-height:1.35}
-    .filters{display:flex;gap:10px;flex-wrap:wrap}
-    .filters input,.filters select{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit;color:var(--ink);background:#fbfdff}
-    .table-wrap{overflow:auto}
-    .table{width:100%;border-collapse:collapse;min-width:800px}
-    .table th{text-align:left;color:#6b83a2;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:13px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-    .table td{padding:14px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
-    .table td strong{display:block}
-    .thumb{width:45px;height:38px;object-fit:cover;border-radius:6px;cursor:pointer}
-    .photo-missing{display:inline-block;max-width:85px;color:var(--muted);font-size:10px;line-height:1.2}
-    .photo-archived{display:inline-block;max-width:105px;color:#856404;background:#fff3cd;padding:3px 6px;border-radius:6px;font-size:10px;line-height:1.2}
-    .badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}
-    .hadir,.hadir-pulang{background:#dcf7e7;color:#18763d}
-    .hadir-terlambat,.terlambat-pulang,.terlambat{background:#ffe3c7;color:#a85300}
-    .tidak-hadir{background:#ffe1e4;color:#bd2639}
-    .ijin{background:#fff1c8;color:#926500}
-    .badge-unclosed{display:inline-block;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#ffe3c7;color:#a85300}
-    .badge-completed{display:inline-block;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#dcf7e7;color:#18763d}
-    .empty{text-align:center!important;color:var(--muted);padding:35px!important}
-    .sanction{padding:16px 18px;border-left:5px solid var(--orange);background:#fff9ed;border-radius:10px;margin-bottom:18px;font-size:13px;line-height:1.5}
-    .sanction strong{color:#8e5800}
-    .rules{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
-    .rule{background:#f6f9fd;border:1px solid var(--line);border-radius:10px;padding:13px;font-size:12px}
-    .rule b{font-size:20px;display:block;color:#126dc6}
-    .danger{color:var(--red);font-weight:800}
-    .modal{display:none;position:fixed;inset:0;background:#001d3d99;align-items:center;justify-content:center;padding:20px;z-index:100}
-    .modal.open{display:flex}
-    .modal-content{background:#fff;padding:20px;border-radius:16px;max-width:620px;max-height:90vh;box-shadow:0 15px 40px rgba(0,0,0,.3)}
-    .modal img{max-width:100%;max-height:75vh;display:block;border-radius:8px}
-    .modal button{float:right;border:0;background:#073b72;color:#fff;border-radius:7px;padding:7px 14px;cursor:pointer;font-weight:700}
-    .person-table{min-width:880px}
-    .person-table td:nth-child(6){min-width:180px}
-    .person-table td small{display:block;color:var(--muted);margin-top:3px}
-    .rate-track{height:9px;background:#edf2f8;border-radius:20px;overflow:hidden;margin-top:6px}
-    .rate-fill{height:100%;background:#20ae61;border-radius:20px}
-    .filter-period{min-width:155px}
-    .date-range{display:flex;align-items:center;gap:6px}
-    .date-range input{min-width:135px}
-    .history-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-    .export-button{border:0;background:#19a85a;color:white;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-    .export-button:hover{filter:brightness(.94)}
-    .export-button-secondary{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer}
-    .export-button-secondary:hover{background:#f0f5fa}
-    .person-analysis{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:13px;background:#fbfdff}
-    .person-analysis-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
-    .person-analysis-head h3{margin:0;font-size:15px}
-    .person-analysis-head p{margin:5px 0 0;font-size:12px;color:var(--muted)}
-    .person-analysis-head select{min-width:240px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:white;color:var(--ink);font:inherit}
-    .person-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
-    .person-stat{background:white;border:1px solid var(--line);border-radius:10px;padding:12px}
-    .person-stat small{display:block;color:var(--muted);font-size:11px}
-    .person-stat strong{display:block;margin-top:5px;font-size:18px}
-    .person-analysis .analysis-grid{margin-bottom:16px}
-    .person-history-wrap{max-height:300px;overflow:auto}
-    .person-history{min-width:720px}
-    .person-history th{position:sticky;top:0;background:white;z-index:1}
-    @media(max-width:980px){.stats{grid-template-columns:repeat(3,1fr)}.rules{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:850px){.analysis-grid,.detail-grid{grid-template-columns:1fr 1fr}header{padding:16px 20px;height:auto}.header-actions{flex-wrap:wrap;justify-content:flex-end}.clock{display:none}.date-range{width:100%}.date-range input{flex:1;min-width:0}.person-stats{grid-template-columns:repeat(3,1fr)}.person-analysis-head{align-items:flex-start;flex-direction:column}.person-analysis-head select{width:100%}}
-    @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.rules{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){.stats{grid-template-columns:1fr}.analysis-grid,.detail-grid{grid-template-columns:1fr}header img{width:100px;height:48px}header h1{font-size:16px}.panel-head{align-items:flex-start;flex-direction:column}.filters{width:100%}.filters>*{flex:1;min-width:120px}.person-stats{grid-template-columns:repeat(2,1fr)}}
+    :root {
+      --blue: #07529a;
+      --yellow: #f4c51b;
+      --ink: #12233d;
+      --muted: #6d7f99;
+      --line: #dbe5f1;
+      --bg: #edf5ff;
+      --green: #19a85a;
+      --red: #d73d4f;
+      --orange: #e88a14
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(120deg, #063d76, #087be5);
+      min-height: 100vh
+    }
+
+    header {
+      height: 92px;
+      background: var(--yellow);
+      display: flex;
+      align-items: center;
+      padding: 0 max(24px, calc((100% - 1240px)/2));
+      gap: 18px
+    }
+
+    header img {
+      width: 128px;
+      height: 58px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 12px;
+      padding: 5px
+    }
+
+    header h1 {
+      font-size: 21px;
+      margin: 0;
+      color: #073b72
+    }
+
+    header p {
+      font-size: 13px;
+      margin: 5px 0 0;
+      color: #273d5d
+    }
+
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .clock {
+      background: #fff3c4;
+      border-radius: 11px;
+      padding: 9px 16px;
+      text-align: center;
+      font-size: 12px;
+      color: #57708f
+    }
+
+    .clock strong {
+      display: block;
+      font-size: 15px;
+      color: #173b67
+    }
+
+    .refresh {
+      border: 0;
+      background: #073b72;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .cleanup-button {
+      border: 0;
+      background: #d73d4f;
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .cleanup-button:hover {
+      filter: brightness(.92)
+    }
+
+    main {
+      max-width: 1240px;
+      margin: 32px auto;
+      padding: 0 20px 50px
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px
+    }
+
+    .stat,
+    .panel {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px #032d5b2b
+    }
+
+    .stat {
+      padding: 20px 22px;
+      position: relative
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 28px;
+      margin-top: 8px;
+      line-height: 1.15
+    }
+
+    .stat span {
+      position: absolute;
+      right: 18px;
+      top: 20px;
+      font-size: 24px;
+      background: #fff4cd;
+      border-radius: 12px;
+      padding: 8px
+    }
+
+    .stat.green span {
+      background: #dff8d8
+    }
+
+    .stat.red span {
+      background: #ffe3e5
+    }
+
+    .stat.orange span {
+      background: #ffebcf
+    }
+
+    .stat.yellow span {
+      background: #fff9db
+    }
+
+    .panel {
+      margin-top: 22px;
+      padding: 25px
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px
+    }
+
+    .panel h2 {
+      font-size: 18px;
+      margin: 0
+    }
+
+    .panel p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 6px 0 0
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px
+    }
+
+    .chart-box {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 18px
+    }
+
+    .chart-box h3 {
+      margin: 0 0 16px;
+      font-size: 14px
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 112px 1fr 35px;
+      align-items: center;
+      gap: 9px;
+      margin: 13px 0;
+      font-size: 12px
+    }
+
+    .bar-track {
+      height: 13px;
+      background: #edf2f8;
+      border-radius: 20px;
+      overflow: hidden
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 20px;
+      min-width: 2px
+    }
+
+    .bar-green {
+      background: #20ae61
+    }
+
+    .bar-red {
+      background: #dc4d5c
+    }
+
+    .bar-yellow {
+      background: #e8ae1b
+    }
+
+    .bar-orange {
+      background: #e98628
+    }
+
+    .daily-chart {
+      height: 190px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      padding: 15px 3px 0
+    }
+
+    .day-column {
+      height: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      min-width: 24px
+    }
+
+    .day-bar {
+      width: 100%;
+      max-width: 34px;
+      background: #1681ef;
+      border-radius: 6px 6px 0 0;
+      min-height: 2px
+    }
+
+    .day-column small {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+      transform: rotate(-35deg);
+      transform-origin: top center;
+      margin-top: 8px
+    }
+
+    .day-count {
+      font-size: 10px;
+      font-weight: 700;
+      color: #126dc6
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px
+    }
+
+    .detail-card {
+      border: 1px solid var(--line);
+      border-top: 4px solid #20ae61;
+      border-radius: 11px;
+      padding: 15px;
+      min-width: 0
+    }
+
+    .detail-card.red {
+      border-top-color: #dc4d5c
+    }
+
+    .detail-card.yellow {
+      border-top-color: #e8ae1b
+    }
+
+    .detail-card.orange {
+      border-top-color: #e98628
+    }
+
+    .detail-card h3 {
+      font-size: 13px;
+      margin: 0
+    }
+
+    .detail-number {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 8px 0
+    }
+
+    .detail-list {
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+      max-height: 150px;
+      overflow: auto
+    }
+
+    .detail-list div {
+      font-size: 11px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--line);
+      line-height: 1.35
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .filters input,
+    .filters select {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fbfdff
+    }
+
+    .table-wrap {
+      overflow: auto
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px
+    }
+
+    .table th {
+      text-align: left;
+      color: #6b83a2;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      padding: 13px 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line)
+    }
+
+    .table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      vertical-align: middle
+    }
+
+    .table td strong {
+      display: block
+    }
+
+    .thumb {
+      width: 45px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer
+    }
+
+    .photo-missing {
+      display: inline-block;
+      max-width: 85px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.2
+    }
+
+    .photo-archived {
+      display: inline-block;
+      max-width: 105px;
+      color: #856404;
+      background: #fff3cd;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 10px;
+      line-height: 1.2
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800
+    }
+
+    .hadir,
+    .hadir-pulang {
+      background: #dcf7e7;
+      color: #18763d
+    }
+
+    .hadir-terlambat,
+    .terlambat-pulang,
+    .terlambat {
+      background: #ffe3c7;
+      color: #a85300
+    }
+
+    .tidak-hadir {
+      background: #ffe1e4;
+      color: #bd2639
+    }
+
+    .ijin {
+      background: #fff1c8;
+      color: #926500
+    }
+
+    .badge-unclosed {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #ffe3c7;
+      color: #a85300
+    }
+
+    .badge-completed {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #dcf7e7;
+      color: #18763d
+    }
+
+    .empty {
+      text-align: center !important;
+      color: var(--muted);
+      padding: 35px !important
+    }
+
+    .sanction {
+      padding: 16px 18px;
+      border-left: 5px solid var(--orange);
+      background: #fff9ed;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      line-height: 1.5
+    }
+
+    .sanction strong {
+      color: #8e5800
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 20px
+    }
+
+    .rule {
+      background: #f6f9fd;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 12px
+    }
+
+    .rule b {
+      font-size: 20px;
+      display: block;
+      color: #126dc6
+    }
+
+    .danger {
+      color: var(--red);
+      font-weight: 800
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #001d3d99;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100
+    }
+
+    .modal.open {
+      display: flex
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 620px;
+      max-height: 90vh;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, .3)
+    }
+
+    .modal img {
+      max-width: 100%;
+      max-height: 75vh;
+      display: block;
+      border-radius: 8px
+    }
+
+    .modal button {
+      float: right;
+      border: 0;
+      background: #073b72;
+      color: #fff;
+      border-radius: 7px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-weight: 700
+    }
+
+    .person-table {
+      min-width: 880px
+    }
+
+    .person-table td:nth-child(6) {
+      min-width: 180px
+    }
+
+    .person-table td small {
+      display: block;
+      color: var(--muted);
+      margin-top: 3px
+    }
+
+    .rate-track {
+      height: 9px;
+      background: #edf2f8;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 6px
+    }
+
+    .rate-fill {
+      height: 100%;
+      background: #20ae61;
+      border-radius: 20px
+    }
+
+    .filter-period {
+      min-width: 155px
+    }
+
+    .date-range {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .date-range input {
+      min-width: 135px
+    }
+
+    .history-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px
+    }
+
+    .export-button {
+      border: 0;
+      background: #19a85a;
+      color: white;
+      border-radius: 9px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .export-button:hover {
+      filter: brightness(.94)
+    }
+
+    .export-button-secondary {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 9px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .export-button-secondary:hover {
+      background: #f0f5fa
+    }
+
+    .section-export-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0
+    }
+
+    .section-export-button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      background: #19a85a;
+      color: #fff;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .section-export-button.pdf {
+      background: #07529a
+    }
+
+    .section-export-button:hover {
+      filter: brightness(.94)
+    }
+
+    .person-analysis {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fbfdff
+    }
+
+    .person-analysis-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px
+    }
+
+    .person-analysis-head h3 {
+      margin: 0;
+      font-size: 15px
+    }
+
+    .person-analysis-head p {
+      margin: 5px 0 0;
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .person-analysis-head select {
+      min-width: 240px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px 12px;
+      background: white;
+      color: var(--ink);
+      font: inherit
+    }
+
+    .person-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 16px
+    }
+
+    .person-stat {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px
+    }
+
+    .person-stat small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px
+    }
+
+    .person-stat strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 18px
+    }
+
+    .person-analysis .analysis-grid {
+      margin-bottom: 16px
+    }
+
+    .person-history-wrap {
+      max-height: 300px;
+      overflow: auto
+    }
+
+    .person-history {
+      min-width: 720px
+    }
+
+    .person-history th {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1
+    }
+
+    @media(max-width:980px) {
+      .stats {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .rules {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:850px) {
+
+      .analysis-grid,
+      .detail-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      header {
+        padding: 16px 20px;
+        height: auto
+      }
+
+      .header-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end
+      }
+
+      .clock {
+        display: none
+      }
+
+      .date-range {
+        width: 100%
+      }
+
+      .date-range input {
+        flex: 1;
+        min-width: 0
+      }
+
+      .person-stats {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .person-analysis-head {
+        align-items: flex-start;
+        flex-direction: column
+      }
+
+      .person-analysis-head select {
+        width: 100%
+      }
+    }
+
+    @media(max-width:640px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .rules {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    @media(max-width:520px) {
+      .stats {
+        grid-template-columns: 1fr
+      }
+
+      .analysis-grid,
+      .detail-grid {
+        grid-template-columns: 1fr
+      }
+
+      header img {
+        width: 100px;
+        height: 48px
+      }
+
+      header h1 {
+        font-size: 16px
+      }
+
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column
+      }
+
+      .filters {
+        width: 100%
+      }
+
+      .filters>* {
+        flex: 1;
+        min-width: 120px
+      }
+
+      .person-stats {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    @media print {
+      @page {
+        margin: 14mm
+      }
+
+      body.printing {
+        min-height: 0;
+        background: #fff;
+        color: #111
+      }
+
+      body.printing::before {
+        content: attr(data-print-title);
+        display: block;
+        margin: 0 0 16px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #073b72
+      }
+
+      body.printing .print-hidden,
+      body.printing .section-export-actions,
+      body.printing .person-analysis-head select {
+        display: none !important
+      }
+
+      body.printing .print-target {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        background: #fff !important
+      }
+
+      body.printing .chart-box,
+      body.printing .detail-card,
+      body.printing .person-stat,
+      body.printing .sanction,
+      body.printing .rule {
+        break-inside: avoid
+      }
+
+      body.printing .table-wrap,
+      body.printing .person-history-wrap,
+      body.printing .detail-list {
+        max-height: none !important;
+        overflow: visible !important
+      }
+
+      body.printing .table {
+        min-width: 0;
+        width: 100%
+      }
+
+      body.printing .daily-chart {
+        max-width: 100%
+      }
+    }
   </style>
 </head>
+
 <body>
   <header>
     <img src="logo.png" alt="Logo Komdigi">
@@ -118,7 +925,9 @@
     </div>
     <div class="header-actions">
       <div class="clock"><strong id="time">--:--:--</strong><span id="date">--</span></div>
-      <button class="cleanup-button" id="cleanupDriveBtn" type="button" title="Bersihkan file foto & bukti di Google Drive yang sudah melewati 30 hari">🗑 Bersihkan Drive (>30 Hari)</button>
+      <button class="cleanup-button" id="cleanupDriveBtn" type="button"
+        title="Bersihkan file foto & bukti di Google Drive yang sudah melewati 30 hari">🗑 Bersihkan Drive (>30
+        Hari)</button>
       <button class="refresh" onclick="render()">↻ Refresh</button>
     </div>
   </header>
@@ -126,49 +935,76 @@
     <section class="stats">
       <div class="stat"><small>Total Absensi</small><strong id="total">0</strong><span>📋</span></div>
       <div class="stat green"><small>Hadir (Sesi)</small><strong id="hadir">0</strong><span>✓</span></div>
-      <div class="stat orange"><small>Total Terlambat</small><strong id="totalTerlambat">0j 0m</strong><span>◷</span></div>
+      <div class="stat orange"><small>Total Terlambat</small><strong id="totalTerlambat">0j 0m</strong><span>◷</span>
+      </div>
       <div class="stat yellow"><small>Ijin</small><strong id="ijin">0</strong><span>📄</span></div>
       <div class="stat red"><small>Tidak Hadir</small><strong id="tidakHadir">0</strong><span>✕</span></div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="attendanceAnalysisSection">
       <div class="panel-head">
         <div>
           <h2>Analisis Absensi</h2>
           <p>Grafik dan angka diperbarui otomatis dari data absensi tersimpan.</p>
         </div>
+        <div class="section-export-actions" data-export-target="attendanceAnalysisSection">
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
+        </div>
       </div>
       <div class="analysis-grid">
-        <div class="chart-box"><h3>Distribusi Keterangan</h3><div id="statusChart"></div></div>
-        <div class="chart-box"><h3>Tren Absensi Harian</h3><div id="dailyChart" class="daily-chart"></div></div>
+        <div class="chart-box">
+          <h3>Distribusi Keterangan</h3>
+          <div id="statusChart"></div>
+        </div>
+        <div class="chart-box">
+          <h3>Tren Absensi Harian</h3>
+          <div id="dailyChart" class="daily-chart"></div>
+        </div>
       </div>
-      <div class="person-analysis">
+      <div class="person-analysis" id="individualAnalysisSection">
         <div class="person-analysis-head">
           <div>
             <h3>Grafik &amp; Rincian Per Individu</h3>
-            <p>Pilih peserta untuk melihat distribusi status, tren harian, keterlambatan check-out, dan riwayat absensinya.</p>
+            <p>Pilih peserta untuk melihat distribusi status, tren harian, keterlambatan check-out, dan riwayat
+              absensinya.</p>
           </div>
-          <select id="personAnalysisFilter" aria-label="Pilih peserta untuk analisis"><option value="">Memuat peserta...</option></select>
+          <select id="personAnalysisFilter" aria-label="Pilih peserta untuk analisis">
+            <option value="">Memuat peserta...</option>
+          </select>
+        </div>
+        <div class="section-export-actions" data-export-target="individualAnalysisSection">
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
         <div id="personAnalysisContent"></div>
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="detailSummarySection">
       <div class="panel-head">
         <div>
           <h2>Rincian Angka Rekapan</h2>
           <p>Daftar peserta dan data yang membentuk setiap angka pada rekap.</p>
         </div>
+        <div class="section-export-actions" data-export-target="detailSummarySection">
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
+        </div>
       </div>
       <div id="detailCards" class="detail-grid"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="sanctionsSection">
       <div class="panel-head">
         <div>
           <h2>Rekap Ketidakhadiran &amp; Sanksi</h2>
-          <p>Hari tidak hadir tercatat ditambah akumulasi keterlambatan (setiap 8 jam terlambat = 1 hari setara tidak hadir; tidak check out = 4 jam terlambat).</p>
+          <p>Hari tidak hadir tercatat ditambah akumulasi keterlambatan (setiap 8 jam terlambat = 1 hari setara tidak
+            hadir; tidak check out = 4 jam terlambat).</p>
+        </div>
+        <div class="section-export-actions" data-export-target="sanctionsSection">
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
       </div>
       <div id="sanctions"></div>
@@ -181,11 +1017,16 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="attendanceRateSection">
       <div class="panel-head">
         <div>
           <h2>Persentase Kehadiran Per Peserta</h2>
-          <p>Persentase hadir dihitung saat check out. Jika tidak check out, penalti keterlambatan 4 jam (setara 0.5 hari). Setiap 8 jam terlambat setara 1 hari tidak hadir.</p>
+          <p>Persentase hadir dihitung saat check out. Jika tidak check out, penalti keterlambatan 4 jam (setara 0.5
+            hari). Setiap 8 jam terlambat setara 1 hari tidak hadir.</p>
+        </div>
+        <div class="section-export-actions" data-export-target="attendanceRateSection">
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -220,7 +1061,8 @@
             <option value="custom">Rentang Tanggal</option>
           </select>
           <div class="date-range">
-            <input id="dateFrom" type="date" aria-label="Tanggal mulai"><span>s/d</span><input id="dateTo" type="date" aria-label="Tanggal akhir">
+            <input id="dateFrom" type="date" aria-label="Tanggal mulai"><span>s/d</span><input id="dateTo" type="date"
+              aria-label="Tanggal akhir">
           </div>
           <select id="filter">
             <option value="">Semua Keterangan</option>
@@ -262,14 +1104,15 @@
       </div>
     </section>
   </main>
-  
+
   <div id="modal" class="modal">
     <div class="modal-content">
       <button onclick="document.getElementById('modal').classList.remove('open')">Tutup</button>
       <div style="clear:both;padding-top:10px">
         <img id="modalImg" alt="Dokumentasi absensi">
         <p id="photoError" hidden style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:10px">
-          Foto tidak dapat dimuat atau telah dibersihkan dari Google Drive sesuai kebijakan retensi 30 hari. Data rekapan absensi tetap tersimpan aman di Spreadsheet dan Dashboard.
+          Foto tidak dapat dimuat atau telah dibersihkan dari Google Drive sesuai kebijakan retensi 30 hari. Data
+          rekapan absensi tetap tersimpan aman di Spreadsheet dan Dashboard.
         </p>
       </div>
     </div>
@@ -281,7 +1124,7 @@
     let currentFilteredRecords = [];
     let currentRecords = [];
 
-    async function getRecords(){
+    async function getRecords() {
       const response = await fetch(API_URL);
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.message || 'Data absensi tidak dapat dibaca');
@@ -290,7 +1133,7 @@
 
     const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-    function dateKey(value){
+    function dateKey(value) {
       const text = String(value || '');
       if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
       const date = new Date(text);
@@ -304,11 +1147,11 @@
       return `${parts.year}-${parts.month}-${parts.day}`;
     }
 
-    function todayKey(){
+    function todayKey() {
       return dateKey(new Date().toISOString());
     }
 
-    function displayDate(record){
+    function displayDate(record) {
       const key = dateKey(record.date || record.dateLabel);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return String(record.dateLabel || record.date || '-');
       return new Intl.DateTimeFormat('id-ID', {
@@ -320,7 +1163,7 @@
       }).format(new Date(`${key}T12:00:00+08:00`));
     }
 
-    function parseTimeMinutes(value){
+    function parseTimeMinutes(value) {
       if (!value) return null;
       const text = String(value).trim();
       const match = text.match(/(?:^|\s|T)(\d{1,2}):(\d{2})/);
@@ -332,7 +1175,7 @@
       return null;
     }
 
-    function formatTime(value){
+    function formatTime(value) {
       const text = String(value || '');
       const match = text.match(/(?:^|\s|T)(\d{1,2}):(\d{2})/);
       if (match) return `${match[1].padStart(2, '0')}:${match[2]}`;
@@ -345,19 +1188,19 @@
       }).format(date);
     }
 
-    function photoUrl(value){
+    function photoUrl(value) {
       const url = String(value || '');
       if (url.includes('drive.google.com/thumbnail')) return url;
       const match = url.match(/\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
       return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600` : url;
     }
 
-    function workingDay(date){
+    function workingDay(date) {
       const d = new Date(`${date}T00:00:00Z`).getUTCDay();
       return d !== 0 && d !== 6;
     }
 
-    function isRecordOlderThan30Days(record){
+    function isRecordOlderThan30Days(record) {
       const createdStr = record.createdAt || record.date;
       if (!createdStr) return false;
       const created = new Date(createdStr).getTime();
@@ -372,7 +1215,7 @@
      * - Jika tidak check out, total keterlambatan ditambah penalti 4 jam (240 menit).
      * - 8 jam keterlambatan = setara 1 hari tidak hadir.
      */
-    function participantSummaries(records){
+    function participantSummaries(records) {
       const participants = new Map();
 
       records.forEach(record => {
@@ -410,14 +1253,14 @@
           const hasAbsent = dateRecords.some(r => r.status === 'Tidak Hadir');
           const hasLeave = dateRecords.some(r => r.status === 'Ijin');
 
-          const checkInRecord = dateRecords.find(r => 
-            r.attendanceType === 'Datang' || 
+          const checkInRecord = dateRecords.find(r =>
             ['Hadir', 'Hadir Terlambat', 'Terlambat'].includes(r.status)
           );
-          const checkOutRecord = dateRecords.find(r => 
-            r.attendanceType === 'Pulang' || 
+          const checkOutRecord = dateRecords.find(r =>
+            r.attendanceType === 'Pulang' ||
             ['Hadir Pulang', 'Terlambat Pulang'].includes(r.status)
           );
+
 
           if (hasAbsent && !checkInRecord && !checkOutRecord) {
             absentDays++;
@@ -449,9 +1292,9 @@
               }
             }
 
-            const hasCheckedOut = Boolean(checkOutRecord);
+            const hasCheckOut = Boolean(checkOutRecord);
             let unclosedPenalty = 0;
-            if (!hasCheckedOut) {
+            if (!hasCheckOut) {
               unclosedCount++;
               // Sesuai aturan: jika tidak check out maka total terlambat jadi 4 jam (240 menit)
               unclosedPenalty = 240;
@@ -498,7 +1341,7 @@
       }).sort((a, b) => a.name.localeCompare(b.name, 'id') || a.department.localeCompare(b.department, 'id'));
     }
 
-    function absenceSummary(records){
+    function absenceSummary(records) {
       const summaries = participantSummaries(records);
       return summaries.filter(p => p.absent > 0 || p.lateTotal > 0).map(person => {
         const dates = [];
@@ -527,9 +1370,9 @@
         const total = person.absent + person.sanctionLateDays;
         let level = total >= 21 ? 'SP3 / Surat Penarikan'
           : total >= 14 ? 'SP2'
-          : total >= 7 ? 'SP1'
-          : total >= 3 ? 'Punishment'
-          : 'Belum ada sanksi';
+            : total >= 7 ? 'SP1'
+              : total >= 3 ? 'Punishment'
+                : 'Belum ada sanksi';
         if (maxRun >= 10) level = 'Surat Penarikan';
 
         return {
@@ -545,7 +1388,7 @@
       });
     }
 
-    function renderAnalytics(records){
+    function renderAnalytics(records) {
       const groups = [
         { label: 'Hadir', statuses: ['Hadir', 'Hadir Pulang'], color: 'green' },
         { label: 'Terlambat', statuses: ['Terlambat', 'Hadir Terlambat', 'Terlambat Pulang'], color: 'orange' },
@@ -577,11 +1420,11 @@
       }).join('');
     }
 
-    function personAnalysisKey(person){
+    function personAnalysisKey(person) {
       return JSON.stringify([person.name, person.department]);
     }
 
-    function renderIndividualAnalytics(records){
+    function renderIndividualAnalytics(records) {
       const select = document.getElementById('personAnalysisFilter');
       const container = document.getElementById('personAnalysisContent');
       const people = participantSummaries(records);
@@ -665,16 +1508,16 @@
             </thead>
             <tbody>
               ${history.length ? history.map(record => {
-                const dKey = dateKey(record.date);
-                const ds = checkoutMap.get(dKey);
-                let checkoutBadge = '-';
-                if (ds && ds.type === 'present') {
-                  checkoutBadge = ds.hasCheckOut
-                    ? '<span class="badge-completed">✓ Sudah Check Out</span>'
-                    : '<span class="badge-unclosed">⚠ Tidak Check Out (+4j)</span>';
-                }
-                const badgeClass = String(record.status || '').toLowerCase().replace(/\s+/g, '-');
-                return `<tr>
+        const dKey = dateKey(record.date);
+        const ds = checkoutMap.get(dKey);
+        let checkoutBadge = '-';
+        if (ds && ds.type === 'present') {
+          checkoutBadge = ds.hasCheckOut
+            ? '<span class="badge-completed">✓ Sudah Check Out</span>'
+            : '<span class="badge-unclosed">⚠ Tidak Check Out (+4j)</span>';
+        }
+        const badgeClass = String(record.status || '').toLowerCase().replace(/\s+/g, '-');
+        return `<tr>
                   <td>${esc(displayDate(record))}</td>
                   <td>${esc(formatTime(record.arrival || record.createdAt))}</td>
                   <td>${esc(record.attendanceType || '-')}</td>
@@ -682,14 +1525,14 @@
                   <td>${checkoutBadge}</td>
                   <td>${esc(record.reason || '-')}</td>
                 </tr>`;
-              }).join('') : '<tr><td colspan="6" class="empty">Belum ada rincian absensi.</td></tr>'}
+      }).join('') : '<tr><td colspan="6" class="empty">Belum ada rincian absensi.</td></tr>'}
             </tbody>
           </table>
         </div>
       `;
     }
 
-    function renderParticipants(records){
+    function renderParticipants(records) {
       const people = participantSummaries(records);
       document.getElementById('personRows').innerHTML = people.length ? people.map(person => {
         const rateFormatted = person.rate.toFixed(1);
@@ -710,7 +1553,7 @@
       }).join('') : '<tr><td colspan="6" class="empty">Belum ada data peserta.</td></tr>';
     }
 
-    function shiftMonth(dateKeyValue, months){
+    function shiftMonth(dateKeyValue, months) {
       const date = new Date(`${dateKeyValue}T00:00:00Z`);
       const day = date.getUTCDate();
       date.setUTCDate(1);
@@ -720,7 +1563,7 @@
       return date.toISOString().slice(0, 10);
     }
 
-    function selectedRange(){
+    function selectedRange() {
       const preset = document.getElementById('period').value;
       const today = todayKey();
       if (preset === 'custom') return { from: document.getElementById('dateFrom').value, to: document.getElementById('dateTo').value };
@@ -730,7 +1573,7 @@
       return { from: '', to: '' };
     }
 
-    function syncRangeInputs(){
+    function syncRangeInputs() {
       const preset = document.getElementById('period').value;
       const range = selectedRange();
       if (preset !== 'custom') {
@@ -739,7 +1582,7 @@
       }
     }
 
-    function filterRecords(records){
+    function filterRecords(records) {
       const range = selectedRange();
       const status = document.getElementById('filter').value;
       const query = document.getElementById('search').value.trim().toLowerCase();
@@ -747,13 +1590,13 @@
       return records.filter(record => {
         const date = dateKey(record.date);
         return (!range.from || date >= range.from) &&
-               (!range.to || date <= range.to) &&
-               (!status || record.status === status) &&
-               (!query || `${record.name || ''} ${record.department || ''}`.toLowerCase().includes(query));
+          (!range.to || date <= range.to) &&
+          (!status || record.status === status) &&
+          (!query || `${record.name || ''} ${record.department || ''}`.toLowerCase().includes(query));
       }).sort((a, b) => String(b.createdAt || b.date).localeCompare(String(a.createdAt || a.date)));
     }
 
-    function renderHistory(records){
+    function renderHistory(records) {
       currentFilteredRecords = filterRecords(records);
       const from = document.getElementById('period').value === 'custom' ? document.getElementById('dateFrom').value : selectedRange().from;
       const to = document.getElementById('period').value === 'custom' ? document.getElementById('dateTo').value : selectedRange().to;
@@ -815,7 +1658,7 @@
       }).join('') : '<tr><td colspan="9" class="empty">Tidak ada data absensi pada filter ini.</td></tr>';
     }
 
-    async function render(){
+    async function render() {
       try {
         const records = await getRecords();
         currentRecords = records;
@@ -853,7 +1696,7 @@
       }
     }
 
-    function showPhoto(src, isArchived){
+    function showPhoto(src, isArchived) {
       const image = document.getElementById('modalImg');
       const error = document.getElementById('photoError');
       image.style.display = 'block';
@@ -870,17 +1713,211 @@
       document.getElementById('modal').classList.add('open');
     }
 
-    function csvCell(value){
+    function csvCell(value) {
       let text = String(value == null ? '' : value);
       if (/^[=+\-@]/.test(text)) text = "'" + text;
       return `"${text.replace(/"/g, '""')}"`;
     }
 
+    function reportStatusGroups() {
+      return [
+        { label: 'Hadir', statuses: ['Hadir', 'Hadir Pulang'] },
+        { label: 'Terlambat', statuses: ['Terlambat', 'Hadir Terlambat', 'Terlambat Pulang'] },
+        { label: 'Ijin', statuses: ['Ijin'] },
+        { label: 'Tidak Hadir', statuses: ['Tidak Hadir'] }
+      ];
+    }
+
+    function sectionReport(sectionId) {
+      const groups = reportStatusGroups();
+      const report = { title: '', tables: [] };
+      const addTable = (title, headers, rows) => report.tables.push({ title, headers, rows });
+
+      if (sectionId === 'attendanceAnalysisSection') {
+        report.title = 'Analisis Absensi';
+        const total = currentRecords.length;
+        addTable('Distribusi Keterangan', ['Keterangan', 'Jumlah Catatan', 'Persentase'], groups.map(group => {
+          const count = currentRecords.filter(record => group.statuses.includes(record.status)).length;
+          return [group.label, count, `${total ? Math.round(count / total * 100) : 0}%`];
+        }));
+        const daily = {};
+        currentRecords.forEach(record => {
+          const date = dateKey(record.date);
+          daily[date] = (daily[date] || 0) + 1;
+        });
+        addTable('Tren Absensi Harian (10 tanggal terakhir)', ['Tanggal', 'Jumlah Absensi'],
+          Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0])).slice(-10));
+      } else if (sectionId === 'individualAnalysisSection') {
+        const people = participantSummaries(currentRecords);
+        const selectedKey = document.getElementById('personAnalysisFilter').value;
+        const person = people.find(item => personAnalysisKey(item) === selectedKey) || people[0];
+        report.title = `Grafik dan Rincian Per Individu${person ? ` - ${person.name}` : ''}`;
+        if (!person) {
+          addTable('Ringkasan', ['Informasi'], [['Belum ada data peserta']]);
+          return report;
+        }
+
+        addTable('Ringkasan Peserta',
+          ['Nama', 'Jurusan / Prodi', 'Hadir', 'Hadir Efektif', 'Tidak Hadir', 'Ijin', 'Total Terlambat', 'Tanpa Check-out', 'Persentase Hadir'],
+          [[person.name, person.department, person.present, person.effectivePresent.toFixed(1), person.absent,
+            person.leave, `${Math.floor(person.lateTotal / 60)}j ${person.lateTotal % 60}m`,
+            person.unclosedCount, `${person.rate.toFixed(1)}%`]]);
+
+        const personRecords = currentRecords.filter(record =>
+          String(record.name || 'Tanpa nama').trim() === person.name &&
+          String(record.department || '').trim() === person.department
+        );
+        addTable('Distribusi Keterangan', ['Keterangan', 'Jumlah Catatan', 'Persentase'], groups.map(group => {
+          const count = personRecords.filter(record => group.statuses.includes(record.status)).length;
+          return [group.label, count, `${personRecords.length ? Math.round(count / personRecords.length * 100) : 0}%`];
+        }));
+
+        const daily = {};
+        personRecords.forEach(record => {
+          const date = dateKey(record.date);
+          daily[date] = (daily[date] || 0) + 1;
+        });
+        addTable('Tren Absensi Harian (10 tanggal terakhir)', ['Tanggal', 'Jumlah Absensi'],
+          Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0])).slice(-10));
+
+        const checkoutByDate = new Map(person.daySummaries.map(day => [day.date, day]));
+        const history = personRecords.slice().sort((a, b) =>
+          dateKey(b.date).localeCompare(dateKey(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt))
+        );
+        addTable('Riwayat Absensi', ['Tanggal', 'Jam', 'Jenis Absensi', 'Keterangan', 'Status Check-out', 'Alasan'],
+          history.map(record => {
+            const day = checkoutByDate.get(dateKey(record.date));
+            const checkout = day && day.type === 'present'
+              ? (day.hasCheckOut ? 'Sudah Check Out' : 'Tidak Check Out (+4 jam)')
+              : '-';
+            return [dateKey(record.date), formatTime(record.arrival || record.createdAt),
+              record.attendanceType || '-', record.status || '-', checkout, record.reason || '-'];
+          }));
+      } else if (sectionId === 'detailSummarySection') {
+        report.title = 'Rincian Angka Rekapan';
+        groups.forEach(group => {
+          const records = currentRecords.filter(record => group.statuses.includes(record.status));
+          addTable(`${group.label} (${records.length})`, ['Nama', 'Jurusan / Prodi', 'Tanggal', 'Keterangan'],
+            records.map(record => [record.name || '-', record.department || '-', dateKey(record.date), record.status || '-']));
+        });
+      } else if (sectionId === 'sanctionsSection') {
+        report.title = 'Rekap Ketidakhadiran dan Sanksi';
+        addTable('Rekap Per Peserta',
+          ['Nama', 'Total Setara Tidak Hadir', 'Absen Tercatat', 'Setara Terlambat', 'Total Terlambat', 'Tidak Check-out', 'Tidak Hadir Berturut-turut', 'Status'],
+          absenceSummary(currentRecords).map(item => [
+            item.name, item.total, item.absenceDays, item.lateDays,
+            `${Math.floor(item.lateMinutesTotal / 60)}j ${item.lateMinutesTotal % 60}m`,
+            item.unclosedCount, item.maxRun, item.level
+          ]));
+        addTable('Aturan Sanksi', ['Hari Tidak Masuk', 'Tindakan'], [
+          ['3 hari kerja', 'Punishment'],
+          ['7 hari kerja', 'Teguran SP1'],
+          ['14 hari kerja', 'Teguran SP2'],
+          ['21 hari kerja', 'SP3 / surat penarikan'],
+          ['10 hari berturut-turut', 'Surat penarikan']
+        ]);
+      } else if (sectionId === 'attendanceRateSection') {
+        report.title = 'Persentase Kehadiran Per Peserta';
+        addTable('Persentase Kehadiran', [
+          'Nama', 'Jurusan / Prodi', 'Hadir', 'Hadir Efektif', 'Tidak Hadir + Setara Terlambat',
+          'Ijin', 'Total Terlambat', 'Setara Tidak Hadir (hari)', 'Tanpa Check-out', 'Persentase Hadir'
+        ], participantSummaries(currentRecords).map(person => [
+          person.name, person.department, person.present, person.effectivePresent.toFixed(1),
+          person.absent + person.sanctionLateDays, person.leave,
+          `${Math.floor(person.lateTotal / 60)}j ${person.lateTotal % 60}m`,
+          (person.lateTotal / 480).toFixed(1), person.unclosedCount, `${person.rate.toFixed(1)}%`
+        ]));
+      }
+
+      return report;
+    }
+
+    function excelReportCell(value) {
+      let text = String(value == null ? '' : value);
+      if (/^[=+\-@]/.test(text)) text = "'" + text;
+      return `<td class="text">${esc(text)}</td>`;
+    }
+
+    function downloadSectionExcel(sectionId) {
+      const report = sectionReport(sectionId);
+      const tables = report.tables.map(table => `
+        <h3>${esc(table.title)}</h3>
+        <table>
+          <thead><tr>${table.headers.map(header => `<th>${esc(header)}</th>`).join('')}</tr></thead>
+          <tbody>${table.rows.length
+          ? table.rows.map(row => `<tr>${row.map(excelReportCell).join('')}</tr>`).join('')
+          : `<tr><td class="text" colspan="${table.headers.length}">Tidak ada data.</td></tr>`}
+          </tbody>
+        </table>`).join('');
+      const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(report.title.slice(0, 31))}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+          <style>
+            body { font-family: Calibri, Arial, sans-serif; }
+            table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+            th { background: #07529a; color: #fff; border: 1px solid #ccc; padding: 7px; }
+            td { border: 1px solid #ccc; padding: 6px; }
+            .text { mso-number-format: "\\@"; }
+          </style>
+        </head>
+        <body><h2>${esc(report.title)}</h2>
+          <p>Diunduh: ${esc(new Date().toLocaleString('id-ID'))}</p>${tables}
+        </body></html>`;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob(['\uFEFF', template], { type: 'application/vnd.ms-excel;charset=utf-8' }));
+      link.download = `${sectionId}-${todayKey()}.xls`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    function printSectionPdf(sectionId, title) {
+      const target = document.getElementById(sectionId);
+      if (!target) throw new Error(`Bagian laporan tidak ditemukan: ${sectionId}`);
+
+      const hiddenElements = [];
+      let current = target;
+      target.classList.add('print-target');
+      while (current && current !== document.body) {
+        const parent = current.parentElement;
+        if (!parent) break;
+        Array.from(parent.children).forEach(sibling => {
+          if (sibling !== current && !sibling.classList.contains('print-hidden')) {
+            sibling.classList.add('print-hidden');
+            hiddenElements.push(sibling);
+          }
+        });
+        current = parent;
+      }
+
+      const restore = () => {
+        target.classList.remove('print-target');
+        hiddenElements.forEach(element => element.classList.remove('print-hidden'));
+        document.body.classList.remove('printing');
+        delete document.body.dataset.printTitle;
+      };
+      document.body.dataset.printTitle = title;
+      document.body.classList.add('printing');
+      window.addEventListener('afterprint', restore, { once: true });
+      window.print();
+    }
+
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-export-format]');
+      if (!button) return;
+      const targetId = button.closest('[data-export-target]').dataset.exportTarget;
+      if (button.dataset.exportFormat === 'excel') {
+        downloadSectionExcel(targetId);
+      } else {
+        const report = sectionReport(targetId);
+        printSectionPdf(targetId, report.title);
+      }
+    });
+
     /**
      * Ekspor ke Excel (.xls) dengan kolom-kolom yang terpisah secara sempurna:
      * Tanggal, Jam, Nama, Jurusan / Prodi, Jenis Absensi, Keterangan, Alasan, Bukti Pendukung, Status Check-out, Lokasi.
      */
-    function exportExcel(){
+    function exportExcel() {
       if (!currentFilteredRecords.length) {
         alert('Tidak ada data absensi untuk diekspor.');
         return;
@@ -996,7 +2033,7 @@
       URL.revokeObjectURL(link.href);
     }
 
-    function exportCSV(){
+    function exportCSV() {
       if (!currentFilteredRecords.length) {
         alert('Tidak ada data absensi untuk diekspor.');
         return;
@@ -1060,7 +2097,7 @@
       URL.revokeObjectURL(link.href);
     }
 
-    async function cleanupDriveFiles(){
+    async function cleanupDriveFiles() {
       const confirmed = confirm(
         'Bersihkan berkas foto & bukti di Google Drive yang sudah melewati 30 hari?\n\n' +
         '• Berkas foto/bukti dukung >30 hari akan dipindahkan ke tempat sampah Google Drive untuk menghemat kuota penyimpanan.\n' +
@@ -1102,7 +2139,7 @@
 
     syncRangeInputs();
 
-    function clock(){
+    function clock() {
       const n = new Date();
       document.getElementById('time').textContent = n.toLocaleTimeString('id-ID');
       document.getElementById('date').textContent = n.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
@@ -1113,4 +2150,5 @@
     render();
   </script>
 </body>
+
 </html>
