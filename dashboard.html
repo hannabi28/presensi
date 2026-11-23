@@ -948,7 +948,7 @@
           <p>Grafik dan angka diperbarui otomatis dari data absensi tersimpan.</p>
         </div>
         <div class="section-export-actions" data-export-target="attendanceAnalysisSection">
-          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
           <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
       </div>
@@ -974,7 +974,7 @@
           </select>
         </div>
         <div class="section-export-actions" data-export-target="individualAnalysisSection">
-          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
           <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
         <div id="personAnalysisContent"></div>
@@ -988,7 +988,7 @@
           <p>Daftar peserta dan data yang membentuk setiap angka pada rekap.</p>
         </div>
         <div class="section-export-actions" data-export-target="detailSummarySection">
-          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
           <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
       </div>
@@ -1003,7 +1003,7 @@
             hadir; tidak check out = 4 jam terlambat).</p>
         </div>
         <div class="section-export-actions" data-export-target="sanctionsSection">
-          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
           <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
       </div>
@@ -1025,7 +1025,7 @@
             hari). Setiap 8 jam terlambat setara 1 hari tidak hadir.</p>
         </div>
         <div class="section-export-actions" data-export-target="attendanceRateSection">
-          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel</button>
+          <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
           <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
         </div>
       </div>
@@ -1078,7 +1078,7 @@
         </div>
       </div>
       <div class="history-actions">
-        <button id="exportExcel" class="export-button" type="button">⇩ Export Excel (.xls)</button>
+        <button id="exportExcel" class="export-button" type="button">⇩ Export Excel (.xlsx)</button>
         <button id="exportCSV" class="export-button-secondary" type="button">⇩ Export CSV</button>
         <span style="font-size:12px;color:var(--muted);margin-left:auto" id="driveNotice">
           Retensi Google Drive: Berkas foto/bukti &gt;30 hari dibersihkan otomatis, data tabel tetap tersimpan aman.
@@ -1832,40 +1832,154 @@
       return report;
     }
 
-    function excelReportCell(value) {
-      let text = String(value == null ? '' : value);
-      if (/^[=+\-@]/.test(text)) text = "'" + text;
-      return `<td class="text">${esc(text)}</td>`;
+    function xmlEscape(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
+      }[character]));
+    }
+
+    function spreadsheetColumn(index) {
+      let column = '';
+      while (index > 0) {
+        const remainder = (index - 1) % 26;
+        column = String.fromCharCode(65 + remainder) + column;
+        index = Math.floor((index - 1) / 26);
+      }
+      return column;
+    }
+
+    function worksheetXml(report) {
+      const rows = [
+        [report.title],
+        [`Diunduh: ${new Date().toLocaleString('id-ID')}`],
+        []
+      ];
+      report.tables.forEach(table => {
+        rows.push([table.title]);
+        rows.push(table.headers);
+        if (table.rows.length) rows.push(...table.rows);
+        else rows.push(['Tidak ada data.']);
+        rows.push([]);
+      });
+
+      const sheetRows = rows.map((row, rowIndex) => {
+        const cells = row.map((value, columnIndex) => {
+          const reference = `${spreadsheetColumn(columnIndex + 1)}${rowIndex + 1}`;
+          if (typeof value === 'number' && Number.isFinite(value)) {
+            return `<c r="${reference}"><v>${value}</v></c>`;
+          }
+          const text = String(value == null ? '' : value);
+          return `<c r="${reference}" t="inlineStr"><is><t xml:space="preserve">${xmlEscape(text)}</t></is></c>`;
+        }).join('');
+        return `<row r="${rowIndex + 1}">${cells}</row>`;
+      }).join('');
+
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+          <sheetData>${sheetRows}</sheetData>
+        </worksheet>`;
+    }
+
+    function crc32(bytes) {
+      let crc = 0xffffffff;
+      for (let index = 0; index < bytes.length; index++) {
+        crc ^= bytes[index];
+        for (let bit = 0; bit < 8; bit++) {
+          crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+        }
+      }
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function createXlsxBlob(report) {
+      const encoder = new TextEncoder();
+      const sheetName = (report.title.replace(/[\[\]:*?\/\\]/g, ' ').replace(/^'+|'+$/g, '').slice(0, 31) || 'Rekap');
+      const fileEntries = [
+        ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+            <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+            <Default Extension="xml" ContentType="application/xml"/>
+            <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+            <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+          </Types>`],
+        ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+            <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+          </Relationships>`],
+        ['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+            <sheets><sheet name="${xmlEscape(sheetName)}" sheetId="1" r:id="rId1"/></sheets>
+          </workbook>`],
+        ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+            <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+          </Relationships>`],
+        ['xl/worksheets/sheet1.xml', worksheetXml(report)]
+      ];
+      const localParts = [];
+      const centralParts = [];
+      let localOffset = 0;
+
+      fileEntries.forEach(([fileName, content]) => {
+        const nameBytes = encoder.encode(fileName);
+        const data = encoder.encode(content);
+        const checksum = crc32(data);
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        const localView = new DataView(localHeader.buffer);
+        localView.setUint32(0, 0x04034b50, true);
+        localView.setUint16(4, 20, true);
+        localView.setUint16(6, 0x0800, true);
+        localView.setUint16(8, 0, true);
+        localView.setUint16(10, 0, true);
+        localView.setUint16(12, (44 << 9) | (1 << 5) | 1, true);
+        localView.setUint32(14, checksum, true);
+        localView.setUint32(18, data.length, true);
+        localView.setUint32(22, data.length, true);
+        localView.setUint16(26, nameBytes.length, true);
+        localHeader.set(nameBytes, 30);
+        localParts.push(localHeader, data);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        const centralView = new DataView(centralHeader.buffer);
+        centralView.setUint32(0, 0x02014b50, true);
+        centralView.setUint16(4, 20, true);
+        centralView.setUint16(6, 20, true);
+        centralView.setUint16(8, 0x0800, true);
+        centralView.setUint16(10, 0, true);
+        centralView.setUint16(14, (44 << 9) | (1 << 5) | 1, true);
+        centralView.setUint32(16, checksum, true);
+        centralView.setUint32(20, data.length, true);
+        centralView.setUint32(24, data.length, true);
+        centralView.setUint16(28, nameBytes.length, true);
+        centralView.setUint32(42, localOffset, true);
+        centralHeader.set(nameBytes, 46);
+        centralParts.push(centralHeader);
+        localOffset += localHeader.length + data.length;
+      });
+
+      const centralSize = centralParts.reduce((total, part) => total + part.length, 0);
+      const endRecord = new Uint8Array(22);
+      const endView = new DataView(endRecord.buffer);
+      endView.setUint32(0, 0x06054b50, true);
+      endView.setUint16(8, fileEntries.length, true);
+      endView.setUint16(10, fileEntries.length, true);
+      endView.setUint32(12, centralSize, true);
+      endView.setUint32(16, localOffset, true);
+
+      return new Blob([...localParts, ...centralParts, endRecord], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
     }
 
     function downloadSectionExcel(sectionId) {
       const report = sectionReport(sectionId);
-      const tables = report.tables.map(table => `
-        <h3>${esc(table.title)}</h3>
-        <table>
-          <thead><tr>${table.headers.map(header => `<th>${esc(header)}</th>`).join('')}</tr></thead>
-          <tbody>${table.rows.length
-          ? table.rows.map(row => `<tr>${row.map(excelReportCell).join('')}</tr>`).join('')
-          : `<tr><td class="text" colspan="${table.headers.length}">Tidak ada data.</td></tr>`}
-          </tbody>
-        </table>`).join('');
-      const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(report.title.slice(0, 31))}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-          <style>
-            body { font-family: Calibri, Arial, sans-serif; }
-            table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-            th { background: #07529a; color: #fff; border: 1px solid #ccc; padding: 7px; }
-            td { border: 1px solid #ccc; padding: 6px; }
-            .text { mso-number-format: "\\@"; }
-          </style>
-        </head>
-        <body><h2>${esc(report.title)}</h2>
-          <p>Diunduh: ${esc(new Date().toLocaleString('id-ID'))}</p>${tables}
-        </body></html>`;
+      downloadReportExcel(report, `${sectionId}-${todayKey()}.xlsx`);
+    }
+
+    function downloadReportExcel(report, fileName) {
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(new Blob(['\uFEFF', template], { type: 'application/vnd.ms-excel;charset=utf-8' }));
-      link.download = `${sectionId}-${todayKey()}.xls`;
+      link.href = URL.createObjectURL(createXlsxBlob(report));
+      link.download = fileName;
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     }
@@ -1913,10 +2027,6 @@
       }
     });
 
-    /**
-     * Ekspor ke Excel (.xls) dengan kolom-kolom yang terpisah secara sempurna:
-     * Tanggal, Jam, Nama, Jurusan / Prodi, Jenis Absensi, Keterangan, Alasan, Bukti Pendukung, Status Check-out, Lokasi.
-     */
     function exportExcel() {
       if (!currentFilteredRecords.length) {
         alert('Tidak ada data absensi untuk diekspor.');
@@ -1931,7 +2041,7 @@
         });
       });
 
-      const rowsHtml = currentFilteredRecords.map((record, index) => {
+      const rows = currentFilteredRecords.map((record, index) => {
         const dKey = dateKey(record.date);
         const pKey = `${String(record.name || '').trim()}\u0000${String(record.department || '').trim()}\u0000${dKey}`;
         const daySummary = checkoutMap.get(pKey);
@@ -1951,86 +2061,27 @@
         const created = new Date(record.createdAt);
         const timeFormatted = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '-') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
         const proofUrl = record.supportingDocument || record.proof || record.photo || '';
-        const proofCell = proofUrl ? `<a href="${esc(proofUrl)}">${esc(proofUrl)}</a>` : '-';
         const reasonText = ['Tidak Hadir', 'Ijin', 'Terlambat', 'Hadir Terlambat'].includes(record.status) ? (record.reason || '-') : '-';
 
-        return `<tr>
-          <td style="text-align:center">${index + 1}</td>
-          <td class="date" style="text-align:center">${esc(dKey)}</td>
-          <td class="time" style="text-align:center">${esc(timeFormatted)}</td>
-          <td class="text"><strong>${esc(record.name)}</strong></td>
-          <td class="text">${esc(record.department)}</td>
-          <td class="text" style="text-align:center">${esc(record.attendanceType || '-')}</td>
-          <td class="text" style="text-align:center">${esc(record.status)}</td>
-          <td class="text">${esc(reasonText)}</td>
-          <td class="text">${proofCell}</td>
-          <td class="text" style="text-align:center">${esc(checkoutStatus)}</td>
-          <td class="text">${esc(keterlambatanDesc)}</td>
-          <td class="text">${esc(record.location || '-')}</td>
-        </tr>`;
-      }).join('');
+        return [
+          index + 1, dKey, timeFormatted, record.name || '-', record.department || '-',
+          record.attendanceType || '-', record.status || '-', reasonText, proofUrl || '-',
+          checkoutStatus, keterlambatanDesc, record.location || '-'
+        ];
+      });
 
-      const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <!--[if gte mso 9]>
-  <xml>
-    <x:ExcelWorkbook>
-      <x:ExcelWorksheets>
-        <x:ExcelWorksheet>
-          <x:Name>Riwayat Absensi</x:Name>
-          <x:WorksheetOptions>
-            <x:DisplayGridlines/>
-          </x:WorksheetOptions>
-        </x:ExcelWorksheet>
-      </x:ExcelWorksheets>
-    </x:ExcelWorkbook>
-  </xml>
-  <![endif]-->
-  <style>
-    table { border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 11pt; }
-    th { background-color: #07529a; color: #ffffff; font-weight: bold; border: 0.5pt solid #cccccc; padding: 8px; text-align: center; }
-    td { border: 0.5pt solid #cccccc; padding: 6px; vertical-align: middle; }
-    .text { mso-number-format: "\\@"; }
-    .date { mso-number-format: "yyyy-mm-dd"; }
-    .time { mso-number-format: "hh:mm"; }
-  </style>
-</head>
-<body>
-  <h2>REKAP RIWAYAT ABSENSI MAGANG / PKL</h2>
-  <p>Tanggal Ekspor: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
-  <table>
-    <thead>
-      <tr>
-        <th>No</th>
-        <th>Tanggal</th>
-        <th>Jam</th>
-        <th>Nama</th>
-        <th>Jurusan / Prodi</th>
-        <th>Jenis Absensi</th>
-        <th>Keterangan</th>
-        <th>Alasan</th>
-        <th>Bukti Pendukung</th>
-        <th>Status Check-out</th>
-        <th>Keterlambatan</th>
-        <th>Lokasi</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rowsHtml}
-    </tbody>
-  </table>
-</body>
-</html>`;
-
-      const blob = new Blob(['\uFEFF', template], { type: 'application/vnd.ms-excel;charset=utf-8' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `riwayat-absensi-${todayKey()}.xls`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      downloadReportExcel({
+        title: 'Rekap Riwayat Absensi',
+        tables: [{
+          title: 'Rekap Riwayat Absensi Magang / PKL',
+          headers: [
+            'No', 'Tanggal', 'Jam', 'Nama', 'Jurusan / Prodi', 'Jenis Absensi',
+            'Keterangan', 'Alasan', 'Bukti Pendukung', 'Status Check-out',
+            'Keterlambatan', 'Lokasi'
+          ],
+          rows
+        }]
+      }, `riwayat-absensi-${todayKey()}.xlsx`);
     }
 
     function exportCSV() {
