@@ -108,6 +108,14 @@ function doPost(event) {
       }
     }
 
+    if (photo.sharingError) {
+      return json({
+        ok: true,
+        row: rowNumber,
+        warning: `Foto dan link sudah disimpan, tetapi izin berbagi Drive gagal: ${photo.sharingError}`
+      });
+    }
+
     return json({ ok: true, row: rowNumber, message: 'Absensi berhasil disimpan' });
   } catch (error) {
     if (rowWritten) {
@@ -169,12 +177,13 @@ function savePhoto(photoData, name) {
     `${safeName}-${new Date().getTime()}.${extension}`
   );
   const file = folder.createFile(blob);
+  let sharingError = '';
   try {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   } catch (error) {
-    Logger.log('Izin berbagi per berkas dilewati/dibatasi oleh organisasi: ' + error.message);
+    sharingError = error.message;
   }
-  return { url: file.getUrl() };
+  return { url: file.getUrl(), sharingError: sharingError };
 }
 
 function saveSupportingDocument(dataUrl, fileName, name) {
