@@ -3622,7 +3622,7 @@
 
     function sectionReport(sectionId) {
       const groups = reportStatusGroups();
-      const report = { title: '', subtitle: '', tables: [] };
+      const report = { title: '', subtitle: '', tables: [], charts: [] };
       const addTable = (title, headers, rows) => report.tables.push({ title, headers, rows });
 
       if (sectionId === 'attendanceAnalytics') {
@@ -3636,7 +3636,7 @@
         const range = reportRange();
         report.title = 'Laporan Analisis Presensi';
         report.subtitle = selectedReportSubtitle();
-        addTable('Ringkasan Presensi', ['Informasi', 'Nilai'], [
+        const summaryRows = [
           ['Periode', `${range.from || '-'} s/d ${range.to || '-'}`],
           ['Individu', document.getElementById('analysisPerson').selectedOptions[0].textContent],
           ['Total Hari Kerja', total],
@@ -3645,7 +3645,8 @@
           ['Tidak Hadir', absent],
           ['Terlambat (bagian dari Hadir)', late],
           ['Tingkat Kehadiran', `${(total ? present / total * 100 : 0).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`]
-        ]);
+        ];
+        addTable('Ringkasan Presensi', ['Informasi', 'Nilai'], summaryRows);
         const daily = new Map();
         entries.forEach(entry => {
           if (!daily.has(entry.date)) daily.set(entry.date, { present: 0, leave: 0, absent: 0, late: 0, total: 0 });
@@ -3653,10 +3654,38 @@
           tally[entry.key]++;
           tally.total++;
         });
-        addTable('Tren Kehadiran', ['Tanggal', 'Hadir', 'Izin / Sakit', 'Tidak Hadir', 'Terlambat', 'Total'], 
-          Array.from(daily.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([date, tally]) => [
-            excelDateShort(date), tally.present + tally.late, tally.leave, tally.absent, tally.late, tally.total
-          ]));
+        const dailyRows = Array.from(daily.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([date, tally]) => [
+          excelDateShort(date), tally.present + tally.late, tally.leave, tally.absent, tally.late, tally.total
+        ]);
+        addTable('Tren Kehadiran', ['Tanggal', 'Hadir', 'Izin / Sakit', 'Tidak Hadir', 'Terlambat', 'Total'], dailyRows);
+        if (total && dailyRows.length) {
+          report.charts = [
+            {
+              type: 'column',
+              title: 'Tren Kehadiran',
+              tableTitle: 'Tren Kehadiran',
+              categoryColumn: 0,
+              series: [
+                { column: 1, name: 'Hadir', color: '267BF2' },
+                { column: 2, name: 'Izin / Sakit', color: 'FF9817' },
+                { column: 3, name: 'Tidak Hadir', color: 'F4474C' },
+                { column: 4, name: 'Terlambat', color: '16A66A' }
+              ],
+              anchor: { fromCol: 7, fromRow: 3, toCol: 15, toRow: 19 }
+            },
+            {
+              type: 'doughnut',
+              title: 'Ringkasan Presensi',
+              tableTitle: 'Ringkasan Presensi',
+              categoryColumn: 0,
+              valueColumn: 1,
+              categoryOffset: summaryRows.findIndex(row => row[0] === 'Hadir'),
+              count: 3,
+              colors: ['267BF2', 'FF9817', 'F4474C'],
+              anchor: { fromCol: 7, fromRow: 21, toCol: 15, toRow: 37 }
+            }
+          ];
+        }
       } else if (sectionId === 'analysisDetailSection') {
         const labels = { present: 'Hadir', leave: 'Izin / Sakit', absent: 'Tidak Hadir', late: 'Terlambat' };
         const entries = filteredAnalysisEntries();
@@ -3798,9 +3827,13 @@
     }
 
     function worksheetXml(report) {
-      const columnCount = Math.max(2, ...report.tables.map(table =>
+      const chartColumnCount = (report.charts || []).length
+        ? Math.max(...report.charts.map(chart => chart.anchor.toCol + 1))
+        : 0;
+      const columnCount = Math.max(2, chartColumnCount, ...report.tables.map(table =>
         Math.max(table.headers.length, ...table.rows.map(row => row.length))
       ));
+      const tableRanges = [];
       const rows = [
         { values: [String(report.title || 'Laporan').toLocaleUpperCase('id-ID')], style: 1, height: 38, merge: columnCount },
         { values: [report.subtitle || defaultExcelSubtitle()], style: 2, height: 25, merge: columnCount },
@@ -3811,12 +3844,24 @@
       report.tables.forEach(table => {
         const tableColumns = Math.max(1, table.headers.length);
         const lastColumn = spreadsheetColumn(tableColumns);
+        const titleRow = rows.length + 1;
         rows.push({ values: [table.title], style: 3, height: 26, merge: tableColumns });
         const sectionRow = rows.length;
         if (tableColumns > 1) merges.push(`A${sectionRow}:${lastColumn}${sectionRow}`);
+        const headerRow = rows.length + 1;
         rows.push({ values: table.headers, style: 4, height: 30 });
 
         const tableRows = table.rows.length ? table.rows : [['Tidak ada data.']];
+        const firstDataRow = rows.length + 1;
+        tableRanges.push({
+          table,
+          title: table.title,
+          titleRow,
+          headerRow,
+          firstDataRow,
+          dataCount: table.rows.length,
+          columnCount: tableColumns
+        });
         const keyValueSummary = tableColumns === 2 && /ringkasan/i.test(table.title);
         tableRows.forEach((values, index) => {
           let cellStyles;
@@ -3868,9 +3913,11 @@
         ? `<mergeCells count="${merges.length}">${merges.map(ref => `<mergeCell ref="${ref}"/>`).join('')}</mergeCells>`
         : '';
       const orientation = columnCount > 5 ? 'landscape' : 'portrait';
+      const drawingXml = (report.charts || []).length ? '<drawing r:id="rId1"/>' : '';
 
-      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+      return {
+        xml: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
           <sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>
           <dimension ref="A1:${spreadsheetColumn(columnCount)}${rows.length}"/>
           <sheetViews><sheetView showGridLines="0" workbookViewId="0"><pane ySplit="2" topLeftCell="A3" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
@@ -3880,7 +3927,11 @@
           ${mergeXml}
           <pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>
           <pageSetup orientation="${orientation}" fitToWidth="1" fitToHeight="0" paperSize="9"/>
-        </worksheet>`;
+          ${drawingXml}
+        </worksheet>`,
+        tableRanges,
+        columnCount
+      };
     }
 
     function workbookStylesXml() {
@@ -3931,6 +3982,93 @@
         </styleSheet>`;
     }
 
+    function chartSeriesXml(chart, tableRange, series, seriesIndex, sheetName, categoryOffset, categoryCount) {
+      const firstRow = tableRange.firstDataRow + categoryOffset;
+      const lastRow = firstRow + categoryCount - 1;
+      const categoryColumn = spreadsheetColumn(chart.categoryColumn + 1);
+      const valueColumn = spreadsheetColumn(series.column + 1);
+      const categoryFormula = `'${sheetName.replace(/'/g, "''")}'!$${categoryColumn}$${firstRow}:$${categoryColumn}$${lastRow}`;
+      const valueFormula = `'${sheetName.replace(/'/g, "''")}'!$${valueColumn}$${firstRow}:$${valueColumn}$${lastRow}`;
+      const categories = tableRange.table.rows.slice(categoryOffset, categoryOffset + categoryCount)
+        .map((row, index) => `<c:pt idx="${index}"><c:v>${xmlEscape(row[chart.categoryColumn])}</c:v></c:pt>`).join('');
+      const values = tableRange.table.rows.slice(categoryOffset, categoryOffset + categoryCount)
+        .map((row, index) => `<c:pt idx="${index}"><c:v>${Number(row[series.column]) || 0}</c:v></c:pt>`).join('');
+      const seriesTitle = chart.type === 'column'
+        ? `<c:tx><c:strRef><c:f>'${sheetName.replace(/'/g, "''")}'!$${valueColumn}$${tableRange.headerRow}</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${xmlEscape(series.name)}</c:v></c:pt></c:strCache></c:strRef></c:tx>`
+        : `<c:tx><c:v>${xmlEscape(series.name)}</c:v></c:tx>`;
+      const pointColors = chart.type === 'doughnut'
+        ? chart.colors.map((color, index) => `<c:dPt><c:idx val="${index}"/><c:spPr><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:ln><a:noFill/></a:ln></c:spPr></c:dPt>`).join('')
+        : '';
+      return `<c:ser><c:idx val="${seriesIndex}"/><c:order val="${seriesIndex}"/>${seriesTitle}
+        <c:spPr><a:solidFill><a:srgbClr val="${series.color || '267BF2'}"/></a:solidFill><a:ln><a:noFill/></a:ln></c:spPr>
+        ${pointColors}
+        <c:cat><c:strRef><c:f>${xmlEscape(categoryFormula)}</c:f><c:strCache><c:ptCount val="${categoryCount}"/>${categories}</c:strCache></c:strRef></c:cat>
+        <c:val><c:numRef><c:f>${xmlEscape(valueFormula)}</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="${categoryCount}"/>${values}</c:numCache></c:numRef></c:val>
+      </c:ser>`;
+    }
+
+    function excelChartXml(chart, tableRange, sheetName, chartIndex) {
+      const categoryOffset = chart.categoryOffset || 0;
+      const categoryCount = chart.count || tableRange.dataCount;
+      const series = chart.type === 'column'
+        ? chart.series.map((item, index) => chartSeriesXml(chart, tableRange, item, index, sheetName, categoryOffset, categoryCount)).join('')
+        : chartSeriesXml(chart, tableRange, {
+          column: chart.valueColumn,
+          name: 'Jumlah Hari',
+          color: chart.colors[0]
+        }, 0, sheetName, categoryOffset, categoryCount);
+      const title = `<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="1400" b="1"/></a:pPr><a:r><a:rPr lang="id-ID" sz="1400" b="1"/><a:t>${xmlEscape(chart.title)}</a:t></a:r><a:endParaRPr lang="id-ID"/></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>`;
+      let plot;
+      if (chart.type === 'column') {
+        const categoryAxis = 1000001 + chartIndex * 2;
+        const valueAxis = categoryAxis + 1;
+        plot = `<c:barChart><c:barDir val="col"/><c:grouping val="clustered"/><c:varyColors val="0"/>${series}
+          <c:dLbls><c:showLegendKey val="0"/><c:showVal val="1"/><c:showCatName val="0"/><c:showSerName val="0"/><c:showPercent val="0"/></c:dLbls>
+          <c:gapWidth val="80"/><c:overlap val="0"/><c:axId val="${categoryAxis}"/><c:axId val="${valueAxis}"/></c:barChart>
+          <c:catAx><c:axId val="${categoryAxis}"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="b"/><c:tickLblPos val="nextTo"/><c:crossAx val="${valueAxis}"/><c:crosses val="autoZero"/><c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/></c:catAx>
+          <c:valAx><c:axId val="${valueAxis}"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="l"/><c:majorGridlines/><c:numFmt formatCode="0" sourceLinked="0"/><c:tickLblPos val="nextTo"/><c:crossAx val="${categoryAxis}"/><c:crosses val="autoZero"/><c:crossBetween val="between"/></c:valAx>`;
+      } else {
+        plot = `<c:doughnutChart><c:varyColors val="1"/>${series}
+          <c:dLbls><c:showLegendKey val="0"/><c:showVal val="1"/><c:showCatName val="1"/><c:showSerName val="0"/><c:showPercent val="1"/><c:showLeaderLines val="1"/></c:dLbls>
+          <c:firstSliceAng val="270"/><c:holeSize val="58"/></c:doughnutChart>`;
+      }
+      const legend = chart.type === 'doughnut'
+        ? '<c:legend><c:legendPos val="r"/><c:layout/><c:overlay val="0"/></c:legend>'
+        : '<c:legend><c:legendPos val="b"/><c:layout/><c:overlay val="0"/></c:legend>';
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+          <c:lang val="id-ID"/><c:roundedCorners val="0"/><c:chart>${title}<c:autoTitleDeleted val="0"/>
+            <c:plotArea><c:layout/>${plot}</c:plotArea>${legend}<c:plotVisOnly val="1"/><c:dispBlanksAs val="gap"/>
+          </c:chart><c:spPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:ln><a:noFill/></a:ln></c:spPr>
+        </c:chartSpace>`;
+    }
+
+    function drawingXml(charts) {
+      const anchors = charts.map((chart, index) => {
+        const anchor = chart.anchor;
+        const relationshipId = `rId${index + 1}`;
+        const chartId = index + 2;
+        return `<xdr:twoCellAnchor editAs="oneCell">
+          <xdr:from><xdr:col>${anchor.fromCol}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${anchor.fromRow}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>
+          <xdr:to><xdr:col>${anchor.toCol}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${anchor.toRow}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>
+          <xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="${chartId}" name="${xmlEscape(chart.title)}"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr>
+            <xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm>
+            <a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="${relationshipId}"/></a:graphicData></a:graphic>
+          </xdr:graphicFrame><xdr:clientData/>
+        </xdr:twoCellAnchor>`;
+      }).join('');
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">${anchors}</xdr:wsDr>`;
+    }
+
+    function drawingRelationshipsXml(charts) {
+      const relationships = charts.map((chart, index) =>
+        `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart${index + 1}.xml"/>`
+      ).join('');
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationships}</Relationships>`;
+    }
+
     function crc32(bytes) {
       let crc = 0xffffffff;
       for (let index = 0; index < bytes.length; index++) {
@@ -3945,6 +4083,13 @@
     function createXlsxBlob(report) {
       const encoder = new TextEncoder();
       const sheetName = (report.title.replace(/[\[\]:*?\/\\]/g, ' ').replace(/^'+|'+$/g, '').slice(0, 31) || 'Rekap');
+      const charts = report.charts || [];
+      const worksheet = worksheetXml(report);
+      const chartContentTypes = charts.length
+        ? `<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>${charts.map((chart, index) =>
+          `<Override PartName="/xl/charts/chart${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>`
+        ).join('')}`
+        : '';
       const fileEntries = [
         ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -3953,6 +4098,7 @@
             <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
             <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
             <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+            ${chartContentTypes}
           </Types>`],
         ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -3968,8 +4114,26 @@
             <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
           </Relationships>`],
         ['xl/styles.xml', workbookStylesXml()],
-        ['xl/worksheets/sheet1.xml', worksheetXml(report)]
+        ['xl/worksheets/sheet1.xml', worksheet.xml]
       ];
+      if (charts.length) {
+        const chartParts = charts.map((chart, index) => {
+          const tableRange = worksheet.tableRanges.find(table => table.title === chart.tableTitle);
+          if (!tableRange || !tableRange.dataCount) {
+            throw new Error(`Data grafik tidak ditemukan untuk: ${chart.title}`);
+          }
+          return [`xl/charts/chart${index + 1}.xml`, excelChartXml(chart, tableRange, sheetName, index)];
+        });
+        fileEntries.push(
+          ['xl/worksheets/_rels/sheet1.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/>
+            </Relationships>`],
+          ['xl/drawings/drawing1.xml', drawingXml(charts)],
+          ['xl/drawings/_rels/drawing1.xml.rels', drawingRelationshipsXml(charts)],
+          ...chartParts
+        );
+      }
       const localParts = [];
       const centralParts = [];
       let localOffset = 0;
