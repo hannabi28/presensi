@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="id">
 
 <head>
@@ -649,6 +649,15 @@
       flex-shrink: 0
     }
 
+    .active-export-actions {
+      justify-content: flex-end;
+      margin-bottom: 12px
+    }
+
+    .analysis-export-actions {
+      margin-bottom: 10px
+    }
+
     .section-export-button {
       border: 0;
       border-radius: 8px;
@@ -760,6 +769,14 @@
       .rules {
         grid-template-columns: repeat(3, 1fr)
       }
+
+      .analysis-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+
+      .analysis-charts-grid {
+        grid-template-columns: 1fr
+      }
     }
 
     @media(max-width:850px) {
@@ -803,6 +820,38 @@
 
       .person-analysis-head select {
         width: 100%
+      }
+
+      .analysis-range-controls.visible {
+        order: 3;
+        width: 100%;
+        justify-content: space-between
+      }
+
+      .app-content.analysis-mode .app-topbar {
+        flex-wrap: wrap
+      }
+
+      .app-content.analysis-mode .app-topbar > div:first-child {
+        flex: 1 0 100%
+      }
+
+      .analysis-range-controls input {
+        width: 145px
+      }
+
+      .analysis-detail-heading {
+        align-items: flex-start;
+        flex-direction: column
+      }
+
+      .analysis-detail-filters {
+        width: 100%
+      }
+
+      .analysis-detail-filters > * {
+        flex: 1;
+        min-width: 0
       }
     }
 
@@ -880,6 +929,11 @@
         display: none !important
       }
 
+      body.printing .analysis-detail-filters,
+      body.printing .analysis-pagination {
+        display: none !important
+      }
+
       body.printing .print-target {
         display: block !important;
         margin: 0 !important;
@@ -907,6 +961,18 @@
       body.printing .table {
         min-width: 0;
         width: 100%
+      }
+
+      body.printing .app-table,
+      body.printing .analysis-table {
+        min-width: 0;
+        width: 100%
+      }
+
+      body.printing .app-table-wrap,
+      body.printing .analysis-table-wrap {
+        max-height: none !important;
+        overflow: visible !important
       }
 
       body.printing .daily-chart {
@@ -1007,10 +1073,40 @@
       margin-bottom: 26px
     }
 
+    .archive-notice {
+      margin: -13px 0 16px;
+      padding: 8px 11px;
+      border: 1px solid #dce8f8;
+      border-radius: 8px;
+      background: #edf5ff;
+      color: #45627f;
+      font-size: 11px
+    }
+
+    .app-content.analysis-mode .app-topbar {
+      margin-bottom: 17px
+    }
+
+    .app-content.analysis-mode .app-top-actions {
+      display: none
+    }
+
     .app-topbar h1 {
       margin: 0;
       font-size: 23px;
       color: #173c66
+    }
+
+    .analysis-page-icon {
+      display: none;
+      margin-right: 9px;
+      color: #267bf2;
+      font-size: 29px;
+      line-height: 1
+    }
+
+    .app-content.analysis-mode .analysis-page-icon {
+      display: inline-block
     }
 
     .app-topbar p {
@@ -1103,7 +1199,8 @@
     }
 
     .app-filter-row input,
-    .app-filter-row select {
+    .app-filter-row select,
+    .app-panel-heading select {
       min-height: 39px;
       border: 1px solid #dce5ef;
       border-radius: 8px;
@@ -1174,6 +1271,575 @@
       color: #8290a2;
       text-align: center;
       padding: 28px !important
+    }
+
+    .analysis-range-controls {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid #dce5ef;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 3px 12px #18395b0b;
+      color: #45627f;
+      white-space: nowrap
+    }
+
+    .analysis-range-controls.visible {
+      display: flex
+    }
+
+    .analysis-range-controls select,
+    .analysis-range-controls input {
+      min-width: 0;
+      border: 0;
+      background: transparent;
+      color: #233a59;
+      padding: 5px;
+      font: inherit;
+      font-size: 11px
+    }
+
+    .analysis-range-controls select {
+      order: 2;
+      width: 94px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .analysis-range-controls input {
+      display: none;
+      order: 3;
+      width: 108px
+    }
+
+    .analysis-range-controls > span:not(.analysis-range-icon) {
+      display: none;
+      order: 4;
+      color: #78889d;
+      font-size: 11px
+    }
+
+    .analysis-range-icon {
+      color: #173c66;
+      font-size: 17px
+    }
+
+    .analysis-range-label {
+      order: 1;
+      color: #17345f;
+      font-size: 12px
+    }
+
+    .analysis-range-controls.custom-range .analysis-range-label {
+      display: none
+    }
+
+    .analysis-range-controls.custom-range input,
+    .analysis-range-controls.custom-range > span:not(.analysis-range-icon) {
+      display: block
+    }
+
+    .analysis-page {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none
+    }
+
+    .analysis-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 13px;
+      margin-bottom: 16px
+    }
+
+    .analysis-metric {
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 13px;
+      border: 1px solid #e4eaf3;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 5px 16px #18395b0c
+    }
+
+    .analysis-metric::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      bottom: -24px;
+      width: 80px;
+      height: 45px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .06;
+      transform: rotate(-20deg)
+    }
+
+    .analysis-metric.workdays { background: #f5f8ff; color: #267bf2 }
+    .analysis-metric.present { background: #f7fcf9; color: #16a66a }
+    .analysis-metric.leave { background: #fffaf3; color: #ff9817 }
+    .analysis-metric.absent { background: #fff7f7; color: #f4474c }
+
+    .analysis-metric-icon {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #d9e8ff;
+      color: #176bc0;
+      font-size: 25px;
+      font-weight: 800
+    }
+
+    .analysis-metric.present .analysis-metric-icon {
+      background: #d9f4e4;
+      color: #18a55b
+    }
+
+    .analysis-metric.leave .analysis-metric-icon {
+      background: #fff0d9;
+      color: #ed8b15
+    }
+
+    .analysis-metric.absent .analysis-metric-icon {
+      background: #ffe2e4;
+      color: #e43e4c
+    }
+
+    .analysis-metric small {
+      display: block;
+      color: #687c99;
+      font-size: 11px;
+      font-weight: 650
+    }
+
+    .analysis-metric-content {
+      min-width: 0;
+      flex: 1
+    }
+
+    .analysis-metric-value {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 5px
+    }
+
+    .analysis-metric strong {
+      display: block;
+      margin-top: 4px;
+      color: #172d55;
+      font-size: 21px;
+      white-space: nowrap
+    }
+
+    .analysis-metric .analysis-metric-percent {
+      color: #17a460;
+      font-size: 10px;
+      white-space: nowrap
+    }
+
+    .analysis-metric.leave .analysis-metric-percent {
+      color: #e68719
+    }
+
+    .analysis-metric.absent .analysis-metric-percent {
+      color: #e43e4c
+    }
+
+    .analysis-metric .analysis-metric-note {
+      display: none
+    }
+
+    .analysis-charts-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(330px, .95fr);
+      gap: 14px;
+      margin-bottom: 14px
+    }
+
+    .analysis-chart-panel,
+    .analysis-detail-panel {
+      min-width: 0;
+      border: 1px solid #e4eaf3;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 5px 16px #18395b0c
+    }
+
+    .analysis-chart-panel {
+      padding: 17px
+    }
+
+    .analysis-chart-panel:first-child {
+      border-left: 5px solid #267bf2
+    }
+
+    .analysis-panel-title,
+    .analysis-detail-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px
+    }
+
+    .analysis-panel-title > div:first-child,
+    .analysis-detail-heading > div:first-child {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .analysis-heading-icon {
+      flex: 0 0 auto;
+      color: #2175e5;
+      font-size: 23px;
+      font-weight: 800
+    }
+
+    .analysis-panel-title h2,
+    .analysis-detail-heading h2 {
+      margin: 0;
+      color: #17345f;
+      font-size: 15px
+    }
+
+    .analysis-panel-title p {
+      margin: 4px 0 0;
+      color: #72839a;
+      font-size: 11px
+    }
+
+    .analysis-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      color: #576b86;
+      font-size: 10px
+    }
+
+    .analysis-trend-controls {
+      display: inline-flex;
+      flex: 0 0 auto;
+      padding: 2px;
+      border: 1px solid #dce5ef;
+      border-radius: 10px;
+      background: #fff
+    }
+
+    .analysis-trend-controls button {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: transparent;
+      color: #233a59;
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer
+    }
+
+    .analysis-trend-controls button.active {
+      background: #2167cf;
+      color: #fff;
+      box-shadow: 0 2px 6px #2167cf30
+    }
+
+    .analysis-trend-controls button:focus-visible {
+      outline: 2px solid #8fc7ff;
+      outline-offset: 2px
+    }
+
+    .analysis-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap
+    }
+
+    .analysis-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    #attendanceTrend {
+      min-height: 235px;
+      margin-top: 10px
+    }
+
+    .analysis-trend-svg {
+      width: 100%;
+      height: 235px;
+      display: block;
+      overflow: visible
+    }
+
+    .analysis-trend-svg text {
+      fill: #5f718b;
+      font-family: inherit;
+      font-size: 10px
+    }
+
+    .analysis-chart-note {
+      margin: 5px 0 0;
+      color: #72839a;
+      font-size: 10px;
+      line-height: 1.45
+    }
+
+    .donut-summary {
+      min-height: 185px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 10px 0
+    }
+
+    .analysis-donut {
+      width: 148px;
+      height: 148px;
+      flex: 0 0 148px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #eaf0f8
+    }
+
+    .analysis-donut::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: #fff
+    }
+
+    .analysis-donut-center {
+      z-index: 1;
+      text-align: center;
+      color: #526985
+    }
+
+    .analysis-donut-center strong {
+      display: block;
+      color: #172d55;
+      font-size: 21px
+    }
+
+    .analysis-donut-center span {
+      display: block;
+      margin-top: 2px;
+      font-size: 10px
+    }
+
+    .analysis-summary-legend {
+      min-width: 0;
+      display: grid;
+      gap: 12px
+    }
+
+    .analysis-summary-item {
+      display: grid;
+      grid-template-columns: 9px minmax(65px, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      color: #536782;
+      font-size: 10px
+    }
+
+    .analysis-summary-item strong {
+      color: #203756;
+      white-space: nowrap
+    }
+
+    .analysis-summary-item strong span {
+      display: none
+    }
+
+    .analysis-insight {
+      position: relative;
+      padding: 10px 12px;
+      padding-left: 40px;
+      border-radius: 8px;
+      background: #eaf2ff;
+      color: #24599e;
+      font-size: 10px;
+      line-height: 1.45
+    }
+
+    .analysis-insight::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border: 2px solid #267bf2;
+      border-radius: 50%;
+      color: #267bf2;
+      transform: translateY(-65%)
+    }
+
+    .analysis-insight::after {
+      content: "";
+      position: absolute;
+      left: 19px;
+      top: calc(50% + 6px);
+      width: 7px;
+      height: 4px;
+      border-top: 2px solid #267bf2;
+      border-bottom: 2px solid #267bf2;
+      transform: translateY(-50%)
+    }
+
+    .analysis-trend-footer {
+      display: grid;
+      justify-items: center;
+      gap: 7px
+    }
+
+    .analysis-trend-footer .analysis-legend {
+      justify-content: center;
+      font-size: 11px
+    }
+
+    .analysis-detail-panel {
+      padding: 17px
+    }
+
+    .analysis-detail-heading {
+      margin-bottom: 13px
+    }
+
+    .analysis-detail-filters {
+      display: flex;
+      gap: 8px
+    }
+
+    .analysis-detail-filters select,
+    .analysis-detail-filters input {
+      min-width: 170px;
+      border: 1px solid #dce5ef;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fff;
+      color: #233a59;
+      font: inherit;
+      font-size: 11px
+    }
+
+    .analysis-detail-filters input {
+      min-width: 190px
+    }
+
+    .analysis-table-wrap {
+      overflow: auto;
+      border: 1px solid #e3eaf3;
+      border-radius: 8px
+    }
+
+    .analysis-table {
+      width: 100%;
+      min-width: 740px;
+      border-collapse: collapse
+    }
+
+    .analysis-table th {
+      padding: 9px 10px;
+      background: #edf3fc;
+      color: #1d365c;
+      text-align: left;
+      font-size: 11px;
+      white-space: nowrap
+    }
+
+    .analysis-table td {
+      padding: 8px 10px;
+      border-top: 1px solid #e7edf5;
+      color: #253b5b;
+      font-size: 11px
+    }
+
+    .analysis-table tbody tr:hover {
+      background: #f7faff
+    }
+
+    .analysis-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 14px;
+      background: #dcf5e6;
+      color: #158348;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    .analysis-status.leave {
+      background: #fff1d9;
+      color: #ac690d
+    }
+
+    .analysis-status.absent {
+      background: #ffe2e4;
+      color: #b92b38
+    }
+
+    .analysis-status.late {
+      background: #ffecd9;
+      color: #b35e0c
+    }
+
+    .analysis-table-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-top: 9px;
+      color: #687c99;
+      font-size: 11px
+    }
+
+    .analysis-pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .analysis-pagination button,
+    .analysis-pagination span {
+      min-width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #dce5ef;
+      border-radius: 7px;
+      background: #fff;
+      color: #3269b0;
+      font: inherit;
+      font-weight: 700
+    }
+
+    .analysis-pagination button {
+      cursor: pointer
+    }
+
+    .analysis-pagination span {
+      border-color: #2175e5;
+      background: #2175e5;
+      color: #fff
     }
 
     .app-link,
@@ -1313,6 +1979,124 @@
       .app-panel {
         padding: 15px
       }
+
+      #reportView > .app-panel:not(.analysis-page) .app-panel-heading {
+        align-items: stretch;
+        flex-direction: column
+      }
+
+      #reportPerson {
+        width: 100%;
+        min-width: 0
+      }
+
+      .analysis-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+
+      .analysis-metric {
+        gap: 6px;
+        padding: 8px
+      }
+
+      .analysis-metric-icon {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+        font-size: 17px
+      }
+
+      .analysis-metric strong {
+        font-size: 14px
+      }
+
+      .analysis-metric-value {
+        flex-wrap: wrap
+      }
+
+      .analysis-metric .analysis-metric-percent {
+        font-size: 8px
+      }
+
+      .analysis-charts-grid {
+        grid-template-columns: minmax(0, 1fr)
+      }
+
+      .analysis-panel-title {
+        flex-direction: column
+      }
+
+      .analysis-legend {
+        justify-content: flex-start
+      }
+
+      .donut-summary {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center
+      }
+
+      .analysis-donut {
+        width: 122px;
+        height: 122px;
+        flex-basis: 122px
+      }
+
+      .analysis-donut::after {
+        inset: 15px
+      }
+
+      .analysis-summary-legend {
+        width: 100%;
+        padding: 0 8px
+      }
+
+      .analysis-summary-item {
+        grid-template-columns: 8px minmax(0, 1fr) auto;
+        gap: 5px;
+        font-size: 9px
+      }
+
+      .analysis-summary-item strong {
+        font-size: 9px
+      }
+
+      .analysis-detail-filters {
+        flex-direction: column
+      }
+
+      .analysis-range-controls.visible {
+        flex-wrap: wrap
+      }
+
+      .analysis-range-controls select {
+        width: 100%
+      }
+
+      .analysis-range-controls input {
+        width: calc(50% - 28px);
+        flex: 1
+      }
+
+      .analysis-range-controls select {
+        width: 100%
+      }
+
+      .analysis-chart-panel,
+      .analysis-detail-panel {
+        padding: 13px
+      }
+
+      .analysis-table-footer {
+        align-items: flex-start;
+        flex-direction: column
+      }
+
+      .analysis-detail-filters select,
+      .analysis-detail-filters input {
+        width: 100%;
+        min-width: 0
+      }
     }
   </style>
 </head>
@@ -1330,11 +2114,25 @@
         <button type="button" data-view="monitorView" aria-label="Monitoring" title="Monitoring">◉ <span class="nav-label">Monitoring</span></button>
       </nav>
     </aside>
-    <div class="app-content">
+    <div class="app-content" id="appContent">
       <div class="app-topbar">
         <div>
-          <h1 id="pageTitle">Dashboard</h1>
-          <p>Monitoring kehadiran peserta magang / PKL</p>
+          <h1><span class="analysis-page-icon" aria-hidden="true">▥</span><span id="pageTitle">Dashboard</span></h1>
+          <p id="pageBreadcrumb">Monitoring kehadiran peserta magang / PKL</p>
+        </div>
+        <div class="analysis-range-controls" id="analysisRangeControls">
+          <span class="analysis-range-icon" aria-hidden="true">▦</span>
+          <strong class="analysis-range-label" id="analysisRangeLabel"></strong>
+          <select id="reportPeriod" aria-label="Jenis periode">
+            <option value="day">Hari ini</option>
+            <option value="week">Minggu ini</option>
+            <option value="month" selected>Bulan ini</option>
+            <option value="year">Tahun ini</option>
+            <option value="custom">Rentang tanggal</option>
+          </select>
+          <input id="reportFrom" type="date" aria-label="Tanggal mulai laporan">
+          <span>s/d</span>
+          <input id="reportTo" type="date" aria-label="Tanggal akhir laporan">
         </div>
         <div class="app-top-actions">
           <div class="app-clock"><strong id="time">--:--:--</strong><span id="date">--</span></div>
@@ -1342,6 +2140,7 @@
           <button class="app-refresh" type="button" onclick="render()">↻ Perbarui</button>
         </div>
       </div>
+      <div class="archive-notice">Data dashboard hanya menampilkan bulan berjalan. Data bulan sebelumnya tetap tersimpan di Google Sheets.</div>
 
       <section class="app-view active" id="dashboardView">
         <div class="app-panel">
@@ -1362,24 +2161,98 @@
       </section>
 
       <section class="app-view" id="reportView">
-        <div class="app-panel">
-          <div class="app-panel-heading">
-            <div>
-              <h2>Laporan Absensi</h2>
-              <p>Filter laporan berdasarkan periode dan individu.</p>
-            </div>
+        <div class="app-panel analysis-page" id="attendanceAnalytics">
+          <div class="section-export-actions active-export-actions" data-export-target="attendanceAnalytics">
+            <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
+            <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
           </div>
-          <div class="app-filter-row">
-            <select id="reportPeriod" aria-label="Jenis periode">
-              <option value="day">Per Hari</option>
-              <option value="week">Per Minggu</option>
-              <option value="month">Per Bulan</option>
-              <option value="year">Per Tahun</option>
-              <option value="custom">Rentang Tanggal</option>
-            </select>
-            <input id="reportFrom" type="date" aria-label="Tanggal mulai laporan">
-            <input id="reportTo" type="date" aria-label="Tanggal akhir laporan">
-            <select id="reportPerson" aria-label="Filter individu"><option value="">Semua Individu</option></select>
+          <div class="analysis-metrics">
+            <article class="analysis-metric workdays">
+              <span class="analysis-metric-icon">▦</span>
+              <div><small>Total Hari Kerja</small><strong id="analysisWorkdays">0 Hari</strong></div>
+            </article>
+            <article class="analysis-metric present">
+              <span class="analysis-metric-icon">✓</span>
+              <div class="analysis-metric-content"><small>Hadir</small><div class="analysis-metric-value"><strong id="analysisPresent">0 Hari</strong><small class="analysis-metric-percent" id="analysisPresentPercent">0%</small></div><small class="analysis-metric-note" id="analysisLate">Terlambat: 0 hari</small></div>
+            </article>
+            <article class="analysis-metric leave">
+              <span class="analysis-metric-icon">◷</span>
+              <div class="analysis-metric-content"><small>Izin / Sakit</small><div class="analysis-metric-value"><strong id="analysisLeave">0 Hari</strong><small class="analysis-metric-percent" id="analysisLeavePercent">0%</small></div></div>
+            </article>
+            <article class="analysis-metric absent">
+              <span class="analysis-metric-icon">×</span>
+              <div class="analysis-metric-content"><small>Tidak Hadir</small><div class="analysis-metric-value"><strong id="analysisAbsent">0 Hari</strong><small class="analysis-metric-percent" id="analysisAbsentPercent">0%</small></div></div>
+            </article>
+          </div>
+
+          <div class="analysis-charts-grid">
+            <section class="analysis-chart-panel">
+              <div class="analysis-panel-title">
+                <div><span class="analysis-heading-icon">▥</span><div><h2>Tren Kehadiran</h2><p>Grafik kehadiran selama periode yang dipilih</p></div></div>
+                  <div class="analysis-trend-controls" role="group" aria-label="Rentang grafik tren">
+                    <button type="button" data-trend-days="7">7 Hari</button>
+                    <button type="button" class="active" data-trend-days="30" aria-pressed="true">30 Hari</button>
+                    <button type="button" data-trend-days="90">90 Hari</button>
+                  </div>
+              </div>
+              <div id="attendanceTrend" aria-label="Grafik tren presensi"></div>
+                <div class="analysis-trend-footer"><div class="analysis-legend" id="attendanceTrendLegend"></div>
+              <p class="analysis-chart-note" id="attendanceTrendNote"></p>
+                </div>
+            </section>
+            <section class="analysis-chart-panel">
+              <div class="analysis-panel-title">
+                <div><span class="analysis-heading-icon">◕</span><div><h2>Ringkasan Presensi</h2><p>Proporsi status pada periode ini</p></div></div>
+              </div>
+              <div class="donut-summary">
+                <div class="analysis-donut" id="attendanceDonut">
+                  <div class="analysis-donut-center"><strong id="analysisRate">0%</strong><span>Kehadiran</span></div>
+                </div>
+                <div class="analysis-summary-legend" id="attendanceSummaryLegend"></div>
+              </div>
+              <div class="analysis-insight" id="attendanceInsight"></div>
+            </section>
+          </div>
+
+          <section class="analysis-detail-panel" id="analysisDetailSection">
+            <div class="analysis-detail-heading">
+              <div><span class="analysis-heading-icon">♟</span><h2>Detail Presensi Pegawai</h2></div>
+              <div class="analysis-detail-filters">
+                <select id="analysisPerson" aria-label="Filter individu grafik">
+                  <option value="">Semua Individu</option>
+                </select>
+                <input id="analysisSearch" type="search" placeholder="Cari nama pegawai..." aria-label="Cari nama pegawai">
+              </div>
+            </div>
+            <div class="section-export-actions analysis-export-actions" data-export-target="analysisDetailSection">
+              <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
+              <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
+            </div>
+            <div class="analysis-table-wrap">
+              <table class="analysis-table">
+                <thead><tr><th>No</th><th>Nama</th><th>Waktu Masuk</th><th>Waktu Keluar</th><th>Status</th><th>Keterangan</th></tr></thead>
+                <tbody id="analysisDetailRows"></tbody>
+              </table>
+            </div>
+            <div class="analysis-table-footer">
+              <span id="analysisResultCount">Menampilkan 0 data</span>
+              <div class="analysis-pagination">
+                <button id="analysisPrev" type="button" aria-label="Halaman sebelumnya">‹</button>
+                <span id="analysisPage">1</span>
+                <button id="analysisNext" type="button" aria-label="Halaman berikutnya">›</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="app-panel" id="attendanceReportSection">
+          <div class="app-panel-heading">
+            <div><h2>Laporan Absensi Rinci</h2><p>Rincian jam, keterlambatan, izin, dan bukti pendukung.</p></div>
+            <select id="reportPerson" aria-label="Filter individu laporan"><option value="">Semua Individu</option></select>
+          </div>
+          <div class="section-export-actions active-export-actions" data-export-target="attendanceReportSection">
+            <button class="section-export-button" type="button" data-export-format="excel">⇩ Excel (.xlsx)</button>
+            <button class="section-export-button pdf" type="button" data-export-format="pdf" title="Pada dialog cetak, pilih Simpan sebagai PDF">⇩ PDF</button>
           </div>
           <div class="app-table-wrap">
             <table class="app-table">
@@ -1645,6 +2518,10 @@
 
     let currentFilteredRecords = [];
     let currentRecords = [];
+    let currentReportDays = [];
+    let currentAnalysisEntries = [];
+    let currentAnalysisPage = 1;
+    let currentTrendDays = 30;
 
     async function getRecords() {
       const response = await fetch(API_URL);
@@ -1671,6 +2548,11 @@
 
     function todayKey() {
       return dateKey(new Date().toISOString());
+    }
+
+    function currentMonthRecords(records) {
+      const month = todayKey().slice(0, 7);
+      return records.filter(record => dateKey(record.date || record.dateLabel).slice(0, 7) === month);
     }
 
     function displayDate(record) {
@@ -2225,13 +3107,13 @@
         const sorted = day.records.slice().sort((a, b) => activityTime(a).localeCompare(activityTime(b)));
         const checkIn = sorted.find(record =>
           record.attendanceType !== 'Pulang' &&
-          !['Ijin', 'Sakit', 'Tidak Hadir', 'Hadir Pulang', 'Terlambat Pulang'].includes(record.status)
+          !['Ijin', 'Izin', 'Sakit', 'Tidak Hadir', 'Hadir Pulang', 'Terlambat Pulang'].includes(record.status)
         );
         const checkOut = sorted.slice().reverse().find(record =>
           record.attendanceType === 'Pulang' ||
           ['Hadir Pulang', 'Terlambat Pulang'].includes(record.status)
         );
-        const excuse = sorted.find(record => ['Ijin', 'Sakit', 'Tidak Hadir'].includes(record.status));
+        const excuse = sorted.find(record => ['Ijin', 'Izin', 'Sakit', 'Tidak Hadir'].includes(record.status));
         const late = sorted.find(record => ['Terlambat', 'Hadir Terlambat', 'Terlambat Pulang'].includes(record.status));
         const detailRecord = excuse || late;
         const reason = detailRecord
@@ -2282,10 +3164,16 @@
         const day = (monday.getUTCDay() + 6) % 7;
         monday.setUTCDate(monday.getUTCDate() - day);
         from = monday.toISOString().slice(0, 10);
+        const sunday = new Date(monday);
+        sunday.setUTCDate(sunday.getUTCDate() + 6);
+        to = sunday.toISOString().slice(0, 10);
       } else if (period === 'month') {
         from = `${today.slice(0, 7)}-01`;
+        const lastDay = new Date(Date.UTC(Number(today.slice(0, 4)), Number(today.slice(5, 7)), 0)).getUTCDate();
+        to = `${today.slice(0, 7)}-${String(lastDay).padStart(2, '0')}`;
       } else if (period === 'year') {
         from = `${today.slice(0, 4)}-01-01`;
+        to = `${today.slice(0, 4)}-12-31`;
       } else if (period === 'custom') {
         from = document.getElementById('reportFrom').value;
         to = document.getElementById('reportTo').value;
@@ -2294,7 +3182,42 @@
         document.getElementById('reportFrom').value = from;
         document.getElementById('reportTo').value = to;
       }
+      const controls = document.getElementById('analysisRangeControls');
+      controls.classList.toggle('custom-range', period === 'custom');
+      const formatDate = value => value
+        ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+          .format(new Date(`${value}T12:00:00Z`))
+        : '';
+      const fromLabel = formatDate(from);
+      const toLabel = formatDate(to);
+      document.getElementById('analysisRangeLabel').textContent = fromLabel && toLabel
+        ? from === to ? fromLabel : `${fromLabel} – ${toLabel}`
+        : 'Pilih rentang tanggal';
       return { from, to };
+    }
+
+    function reportDayDetails(day) {
+      const inTime = day.checkIn ? activityTime(day.checkIn) : '';
+      const outTime = day.checkOut ? activityTime(day.checkOut) : '';
+      const lateMinutes = inTime ? Math.max(0, (parseTimeMinutes(inTime) || 0) - 8 * 60) : null;
+      const outMinutes = outTime ? parseTimeMinutes(outTime) : null;
+      const earlyMinutes = outMinutes != null && outMinutes < 17 * 60 ? 17 * 60 - outMinutes : outMinutes != null ? 0 : null;
+      const workMinutes = inTime && outTime ? minutesBetween(inTime, outTime) : null;
+      const proofRecord = day.records.find(record =>
+        record.supportingDocument || record.proof || record.photo
+      );
+      const proofUrl = safeHttpUrl(proofRecord && (proofRecord.supportingDocument || proofRecord.proof || proofRecord.photo));
+      return {
+        date: day.date,
+        name: day.name,
+        inTime,
+        outTime,
+        late: lateMinutes == null || !lateMinutes ? '-' : durationLabel(lateMinutes),
+        early: earlyMinutes == null || !earlyMinutes ? '-' : durationLabel(earlyMinutes),
+        work: durationLabel(workMinutes),
+        excuse: day.excuse ? day.excuse.reason || day.excuse.status : '-',
+        proofUrl
+      };
     }
 
     function renderReport(records) {
@@ -2314,29 +3237,203 @@
         (!range.to || day.date <= range.to) &&
         (!selectedPerson || day.name === selectedPerson)
       );
+      currentReportDays = filtered;
       document.getElementById('reportRows').innerHTML = filtered.length ? filtered.map(day => {
-        const inTime = day.checkIn ? activityTime(day.checkIn) : '';
-        const outTime = day.checkOut ? activityTime(day.checkOut) : '';
-        const lateMinutes = inTime ? Math.max(0, (parseTimeMinutes(inTime) || 0) - 8 * 60) : null;
-        const earlyMinutes = outTime && (parseTimeMinutes(outTime) || 0) < 17 * 60
-          ? 17 * 60 - (parseTimeMinutes(outTime) || 0)
-          : outTime ? 0 : null;
-        const workMinutes = inTime && outTime ? minutesBetween(inTime, outTime) : null;
-        const proofRecord = day.records.find(record =>
-          record.supportingDocument || record.proof || record.photo
-        );
-        const proofUrl = safeHttpUrl(proofRecord && (proofRecord.supportingDocument || proofRecord.proof || proofRecord.photo));
-        const proof = proofUrl ? `<a class="app-link" href="${esc(proofUrl)}" target="_blank" rel="noopener noreferrer">Lihat bukti</a>` : '-';
+        const detail = reportDayDetails(day);
+        const proof = detail.proofUrl ? `<a class="app-link" href="${esc(detail.proofUrl)}" target="_blank" rel="noopener noreferrer">Lihat bukti</a>` : '-';
         return `<tr>
-          <td>${esc(day.date)}</td><td>${esc(day.name)}</td>
-          <td>${inTime ? esc(inTime) : '-'}</td><td>${outTime ? esc(outTime) : '-'}</td>
-          <td>${lateMinutes == null ? '-' : lateMinutes ? durationLabel(lateMinutes) : '-'}</td>
-          <td>${earlyMinutes == null || !earlyMinutes ? '-' : durationLabel(earlyMinutes)}</td>
-          <td>${durationLabel(workMinutes)}</td>
-          <td>${day.excuse ? esc(day.excuse.reason || day.excuse.status) : '-'}</td>
+          <td>${esc(detail.date)}</td><td>${esc(detail.name)}</td>
+          <td>${detail.inTime ? esc(detail.inTime) : '-'}</td><td>${detail.outTime ? esc(detail.outTime) : '-'}</td>
+          <td>${esc(detail.late)}</td><td>${esc(detail.early)}</td>
+          <td>${esc(detail.work)}</td><td>${esc(detail.excuse)}</td>
           <td>${proof}</td>
         </tr>`;
       }).join('') : '<tr><td class="app-empty" colspan="9">Tidak ada laporan pada periode dan individu yang dipilih.</td></tr>';
+    }
+
+    function attendanceAnalysisCategory(day) {
+      const absent = day.records.find(record => String(record.status || '').toLowerCase() === 'tidak hadir');
+      if (absent) {
+        return { key: 'absent', explanation: absent.reason || 'Tidak hadir tanpa keterangan' };
+      }
+
+      const leave = day.records.find(record => ['ijin', 'izin', 'sakit'].includes(String(record.status || '').toLowerCase()));
+      if (leave) {
+        return { key: 'leave', explanation: leave.reason || leave.status };
+      }
+
+      const checkInStatus = String(day.checkIn && day.checkIn.status || '').toLowerCase();
+      const inTime = day.checkIn ? activityTime(day.checkIn) : '';
+      const inMinutes = inTime ? parseTimeMinutes(inTime) : null;
+      const isLate = ['terlambat', 'hadir terlambat'].includes(checkInStatus) ||
+        (!checkInStatus && inMinutes != null && inMinutes > 8 * 60);
+      if (isLate) {
+        return {
+          key: 'late',
+          explanation: day.checkIn.reason || `Waktu masuk ${inTime}; batas masuk 08:00`
+        };
+      }
+
+      if (day.checkIn || day.checkOut) {
+        return { key: 'present', explanation: 'Presensi tercatat tanpa keterangan terlambat' };
+      }
+      return null;
+    }
+
+    function renderAttendanceAnalysis(records) {
+      const allDays = attendanceDays(records);
+      const personSelect = document.getElementById('analysisPerson');
+      const previousPerson = personSelect.value;
+      const names = Array.from(new Set(allDays.map(day => day.name))).sort((a, b) => a.localeCompare(b, 'id'));
+      personSelect.innerHTML = '<option value="">Semua Individu</option>' + names.map(name =>
+        `<option value="${esc(name)}">${esc(name)}</option>`
+      ).join('');
+      personSelect.value = names.includes(previousPerson) ? previousPerson : '';
+
+      const range = reportRange();
+      const selectedPerson = personSelect.value;
+      const entries = allDays.filter(day =>
+        (!range.from || day.date >= range.from) &&
+        (!range.to || day.date <= range.to) &&
+        (!selectedPerson || day.name === selectedPerson)
+      ).map(day => {
+        const category = attendanceAnalysisCategory(day);
+        return category ? { ...day, ...category } : null;
+      }).filter(Boolean).sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name, 'id'));
+
+      currentAnalysisEntries = entries;
+      currentAnalysisPage = 1;
+      const countBy = key => entries.filter(entry => entry.key === key).length;
+      const presentCount = countBy('present') + countBy('late');
+      const leaveCount = countBy('leave');
+      const absentCount = countBy('absent');
+      const lateCount = countBy('late');
+      const total = presentCount + leaveCount + absentCount;
+      const share = count => total ? count / total * 100 : 0;
+
+      document.getElementById('analysisWorkdays').textContent = `${total} Hari`;
+      document.getElementById('analysisPresent').textContent = `${presentCount} Hari`;
+      document.getElementById('analysisPresentPercent').textContent = `${share(presentCount).toFixed(1)}% ▲`;
+      document.getElementById('analysisLate').textContent = `Terlambat: ${lateCount} hari`;
+      document.getElementById('analysisLeave').textContent = `${leaveCount} Hari`;
+      document.getElementById('analysisLeavePercent').textContent = `${share(leaveCount).toFixed(1)}% ▲`;
+      document.getElementById('analysisAbsent').textContent = `${absentCount} Hari`;
+      document.getElementById('analysisAbsentPercent').textContent = `${share(absentCount).toFixed(1)}% ▲`;
+      document.getElementById('analysisRate').textContent = `${Math.round(share(presentCount))}%`;
+
+      const presentShare = share(presentCount);
+      const leaveShare = share(leaveCount);
+      const absentShare = share(absentCount);
+      document.getElementById('attendanceDonut').style.background = total
+        ? `conic-gradient(#2c7af0 0 ${presentShare}%, #ff9918 ${presentShare}% ${presentShare + leaveShare}%, #f4474c ${presentShare + leaveShare}% 100%)`
+        : '#eaf0f8';
+      document.getElementById('attendanceSummaryLegend').innerHTML = [
+        { label: 'Hadir', count: presentCount, percent: presentShare, color: '#2c7af0' },
+        { label: 'Izin / Sakit', count: leaveCount, percent: leaveShare, color: '#ff9918' },
+        { label: 'Tidak Hadir', count: absentCount, percent: absentShare, color: '#f4474c' }
+      ].map(item => `
+        <div class="analysis-summary-item">
+          <span class="analysis-legend-dot" style="background:${item.color}"></span>
+          <span>${item.label}</span><strong>${item.count} Hari</strong>
+        </div>`).join('');
+      const insight = total
+        ? `Tingkat kehadiran peserta magang pada periode ini adalah ${share(presentCount).toFixed(1)}%.`
+        : 'Belum ada presensi tercatat pada periode yang dipilih.';
+      document.getElementById('attendanceInsight').textContent = insight;
+
+      const daily = new Map();
+      entries.forEach(entry => {
+        if (!daily.has(entry.date)) daily.set(entry.date, { present: 0, leave: 0, absent: 0, late: 0, total: 0 });
+        const tally = daily.get(entry.date);
+        tally[entry.key]++;
+        tally.total++;
+      });
+      const trend = Array.from(daily.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .slice(-currentTrendDays);
+      const series = [
+        { key: 'present', label: 'Hadir', color: '#267bf2' },
+        { key: 'leave', label: 'Izin / Sakit', color: '#ff9817' },
+        { key: 'absent', label: 'Tidak Hadir', color: '#f4474c' }
+      ];
+      document.getElementById('attendanceTrendLegend').innerHTML = series.map(item =>
+        `<span class="analysis-legend-item"><i class="analysis-legend-dot" style="background:${item.color}"></i>${item.label}</span>`
+      ).join('');
+      if (trend.length) {
+        const left = 54, right = 744, top = 18, bottom = 194;
+        const groupWidth = (right - left) / trend.length;
+        const yAt = percent => bottom - percent / 100 * (bottom - top);
+        const grid = [0, 25, 50, 75, 100].map(value => {
+          const y = yAt(value);
+          return `<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#dce6f2" stroke-width="1"/><text x="2" y="${y + 4}">${value}%</text>`;
+        }).join('');
+        const bars = trend.map(([date, tally], index) => {
+          const barGroupWidth = Math.min(20, groupWidth * .78);
+          const barWidth = Math.max(1, (barGroupWidth - 2) / series.length);
+          const startX = left + index * groupWidth + (groupWidth - barGroupWidth) / 2;
+          return series.map((item, seriesIndex) => {
+            const count = item.key === 'present' ? tally.present + tally.late : tally[item.key];
+            if (!count) return '';
+            const percent = count / tally.total * 100;
+            const height = Math.max(2, (percent / 100) * (bottom - top));
+            const x = startX + seriesIndex * (barWidth + 1);
+            return `<rect x="${x}" y="${bottom - height}" width="${barWidth}" height="${height}" rx="2" fill="${item.color}"><title>${date}: ${item.label}, ${count} dari ${tally.total} (${percent.toFixed(1)}%)</title></rect>`;
+          }).join('');
+        }).join('');
+        const labelIndexes = Array.from(new Set([0, Math.round((trend.length - 1) / 4), Math.round((trend.length - 1) / 2), Math.round((trend.length - 1) * 3 / 4), trend.length - 1]));
+        const labels = labelIndexes.map(index => {
+          const date = trend[index][0];
+          const label = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+            .format(new Date(`${date}T12:00:00Z`));
+          const x = left + index * groupWidth + groupWidth / 2;
+          return `<text x="${x}" y="221" text-anchor="middle">${esc(label)}</text>`;
+        }).join('');
+        document.getElementById('attendanceTrend').innerHTML =
+          `<svg class="analysis-trend-svg" viewBox="0 0 760 235" role="img" aria-label="Grafik tren presensi per tanggal">${grid}${bars}${labels}</svg>`;
+      } else {
+        document.getElementById('attendanceTrend').innerHTML = '<div class="app-empty">Belum ada data tren pada periode ini.</div>';
+      }
+      document.getElementById('attendanceTrendNote').textContent =
+        `Persentase dihitung dari presensi tercatat per tanggal. Terlambat termasuk dalam kategori Hadir. Grafik menampilkan hingga ${currentTrendDays} hari terakhir pada rentang terpilih.`;
+      renderAnalysisDetailRows();
+    }
+
+    function filteredAnalysisEntries() {
+      const query = document.getElementById('analysisSearch').value.trim().toLocaleLowerCase('id-ID');
+      return currentAnalysisEntries.filter(entry =>
+        !query || entry.name.toLocaleLowerCase('id-ID').includes(query)
+      );
+    }
+
+    function renderAnalysisDetailRows(showAll = false) {
+      const filtered = filteredAnalysisEntries();
+      const pageSize = showAll ? Math.max(filtered.length, 1) : 10;
+      const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (!showAll) currentAnalysisPage = Math.min(currentAnalysisPage, pageCount);
+      const page = showAll ? 1 : currentAnalysisPage;
+      const start = (page - 1) * pageSize;
+      const visible = filtered.slice(start, start + pageSize);
+      const labels = {
+        present: 'Hadir',
+        leave: 'Izin / Sakit',
+        absent: 'Tidak Hadir',
+        late: 'Terlambat'
+      };
+      document.getElementById('analysisDetailRows').innerHTML = visible.length ? visible.map((entry, index) => {
+        const inTime = entry.checkIn ? activityTime(entry.checkIn) : '-';
+        const outTime = entry.checkOut ? activityTime(entry.checkOut) : '-';
+        const detail = entry.key === 'present' ? '-' : entry.explanation;
+        return `<tr>
+          <td>${start + index + 1}</td><td>${esc(entry.name)}</td><td>${esc(inTime)}</td><td>${esc(outTime)}</td>
+          <td><span class="analysis-status ${entry.key}">${labels[entry.key]}</span></td><td>${esc(detail)}</td>
+        </tr>`;
+      }).join('') : '<tr><td class="app-empty" colspan="6">Tidak ada data untuk filter ini.</td></tr>';
+      document.getElementById('analysisResultCount').textContent = filtered.length
+        ? showAll ? `Menampilkan seluruh ${filtered.length} data` : `Menampilkan ${start + 1}–${Math.min(start + pageSize, filtered.length)} dari ${filtered.length} data`
+        : 'Menampilkan 0 data';
+      document.getElementById('analysisPage').textContent = String(page);
+      document.getElementById('analysisPrev').disabled = page <= 1;
+      document.getElementById('analysisNext').disabled = page >= pageCount;
     }
 
     function renderMonitoring(records) {
@@ -2417,12 +3514,13 @@
     function renderNewViews(records) {
       renderTodayAttendance(records);
       renderReport(records);
+      renderAttendanceAnalysis(records);
       renderMonitoring(records);
     }
 
     async function render() {
       try {
-        const records = await getRecords();
+        const records = currentMonthRecords(await getRecords());
         currentRecords = records;
 
         const participants = participantSummaries(records);
@@ -2494,12 +3592,97 @@
       ];
     }
 
+    function excelDateLabel(value) {
+      if (!value) return '-';
+      return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC'
+      }).format(new Date(`${value}T12:00:00Z`));
+    }
+
+    function excelDateShort(value) {
+      const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return match ? `${match[3]}/${match[2]}/${match[1]}` : String(value || '-');
+    }
+
+    function selectedReportSubtitle() {
+      const range = reportRange();
+      return `Periode : ${excelDateLabel(range.from)}${range.from === range.to ? '' : ` – ${excelDateLabel(range.to)}`}`;
+    }
+
+    function defaultExcelSubtitle() {
+      const month = todayKey().slice(0, 7);
+      const year = Number(month.slice(0, 4));
+      const monthNumber = Number(month.slice(5, 7));
+      const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+      return `Periode : ${excelDateLabel(`${month}-01`)} – ${excelDateLabel(`${month}-${String(lastDay).padStart(2, '0')}`)}`;
+    }
+
     function sectionReport(sectionId) {
       const groups = reportStatusGroups();
-      const report = { title: '', tables: [] };
+      const report = { title: '', subtitle: '', tables: [] };
       const addTable = (title, headers, rows) => report.tables.push({ title, headers, rows });
 
-      if (sectionId === 'attendanceAnalysisSection') {
+      if (sectionId === 'attendanceAnalytics') {
+        const entries = currentAnalysisEntries;
+        const countBy = key => entries.filter(entry => entry.key === key).length;
+        const present = countBy('present') + countBy('late');
+        const leave = countBy('leave');
+        const absent = countBy('absent');
+        const late = countBy('late');
+        const total = present + leave + absent;
+        const range = reportRange();
+        report.title = 'Laporan Analisis Presensi';
+        report.subtitle = selectedReportSubtitle();
+        addTable('Ringkasan Presensi', ['Informasi', 'Nilai'], [
+          ['Periode', `${range.from || '-'} s/d ${range.to || '-'}`],
+          ['Individu', document.getElementById('analysisPerson').selectedOptions[0].textContent],
+          ['Total Hari Kerja', total],
+          ['Hadir', present],
+          ['Izin / Sakit', leave],
+          ['Tidak Hadir', absent],
+          ['Terlambat (bagian dari Hadir)', late],
+          ['Tingkat Kehadiran', `${(total ? present / total * 100 : 0).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`]
+        ]);
+        const daily = new Map();
+        entries.forEach(entry => {
+          if (!daily.has(entry.date)) daily.set(entry.date, { present: 0, leave: 0, absent: 0, late: 0, total: 0 });
+          const tally = daily.get(entry.date);
+          tally[entry.key]++;
+          tally.total++;
+        });
+        addTable('Tren Kehadiran', ['Tanggal', 'Hadir', 'Izin / Sakit', 'Tidak Hadir', 'Terlambat', 'Total'], 
+          Array.from(daily.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([date, tally]) => [
+            excelDateShort(date), tally.present + tally.late, tally.leave, tally.absent, tally.late, tally.total
+          ]));
+      } else if (sectionId === 'analysisDetailSection') {
+        const labels = { present: 'Hadir', leave: 'Izin / Sakit', absent: 'Tidak Hadir', late: 'Terlambat' };
+        const entries = filteredAnalysisEntries();
+        report.title = 'Laporan Detail Presensi Pegawai';
+        report.subtitle = selectedReportSubtitle();
+        addTable('Detail Presensi Pegawai', [
+          'Tanggal', 'Nama', 'Waktu Masuk', 'Waktu Keluar', 'Status', 'Keterangan'
+        ], entries.map(entry => [
+          excelDateShort(entry.date), entry.name, entry.checkIn ? activityTime(entry.checkIn) : '-',
+          entry.checkOut ? activityTime(entry.checkOut) : '-', labels[entry.key],
+          entry.key === 'present' ? '-' : entry.explanation
+        ]));
+      } else if (sectionId === 'attendanceReportSection') {
+        report.title = 'Laporan Absensi Rinci';
+        report.subtitle = selectedReportSubtitle();
+        addTable('Laporan Absensi Rinci', [
+          'Tanggal', 'Nama', 'Waktu Masuk', 'Waktu Keluar', 'Durasi Terlambat',
+          'Durasi Pulang Cepat', 'Durasi Kerja', 'Izin', 'Bukti Pendukung'
+        ], currentReportDays.map(day => {
+          const detail = reportDayDetails(day);
+          return [
+            excelDateShort(detail.date), detail.name, detail.inTime || '-', detail.outTime || '-',
+            detail.late, detail.early, detail.work, detail.excuse, detail.proofUrl || '-'
+          ];
+        }));
+      } else if (sectionId === 'attendanceAnalysisSection') {
         report.title = 'Analisis Absensi';
         const total = currentRecords.length;
         addTable('Distribusi Keterangan', ['Keterangan', 'Jumlah Catatan', 'Persentase'], groups.map(group => {
@@ -2615,35 +3798,137 @@
     }
 
     function worksheetXml(report) {
+      const columnCount = Math.max(2, ...report.tables.map(table =>
+        Math.max(table.headers.length, ...table.rows.map(row => row.length))
+      ));
       const rows = [
-        [report.title],
-        [`Diunduh: ${new Date().toLocaleString('id-ID')}`],
-        []
+        { values: [String(report.title || 'Laporan').toLocaleUpperCase('id-ID')], style: 1, height: 38, merge: columnCount },
+        { values: [report.subtitle || defaultExcelSubtitle()], style: 2, height: 25, merge: columnCount },
+        { values: [], height: 9 }
       ];
+      const merges = [`A1:${spreadsheetColumn(columnCount)}1`, `A2:${spreadsheetColumn(columnCount)}2`];
+
       report.tables.forEach(table => {
-        rows.push([table.title]);
-        rows.push(table.headers);
-        if (table.rows.length) rows.push(...table.rows);
-        else rows.push(['Tidak ada data.']);
-        rows.push([]);
+        const tableColumns = Math.max(1, table.headers.length);
+        const lastColumn = spreadsheetColumn(tableColumns);
+        rows.push({ values: [table.title], style: 3, height: 26, merge: tableColumns });
+        const sectionRow = rows.length;
+        if (tableColumns > 1) merges.push(`A${sectionRow}:${lastColumn}${sectionRow}`);
+        rows.push({ values: table.headers, style: 4, height: 30 });
+
+        const tableRows = table.rows.length ? table.rows : [['Tidak ada data.']];
+        const keyValueSummary = tableColumns === 2 && /ringkasan/i.test(table.title);
+        tableRows.forEach((values, index) => {
+          let cellStyles;
+          if (keyValueSummary) {
+            const highlight = String(values[0] || '').toLocaleLowerCase('id-ID').includes('tingkat kehadiran');
+            cellStyles = highlight ? [11, 12] : [9, 10];
+          } else {
+            cellStyles = table.headers.map((header, columnIndex) => {
+              const label = String(header).toLocaleLowerCase('id-ID');
+              const isTextColumn = /nama|jurusan|prodi|keterangan|alasan|status|deskripsi|lokasi|bukti|informasi|tindakan/.test(label);
+              return isTextColumn ? (index % 2 ? 6 : 5) : (index % 2 ? 8 : 7);
+            });
+          }
+          rows.push({ values, cellStyles, height: 23 });
+        });
+        rows.push({ values: [], height: 9 });
       });
 
+      const columnWidths = Array.from({ length: columnCount }, (_, columnIndex) => {
+        let longest = 10;
+        report.tables.forEach(table => {
+          [table.headers, ...table.rows].forEach(row => {
+            const value = row[columnIndex];
+            if (value != null) longest = Math.max(longest, String(value).length);
+          });
+        });
+        return Math.max(12, Math.min(42, longest + 3));
+      });
+      const columnsXml = columnWidths.map((width, index) =>
+        `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`
+      ).join('');
+
       const sheetRows = rows.map((row, rowIndex) => {
-        const cells = row.map((value, columnIndex) => {
-          const reference = `${spreadsheetColumn(columnIndex + 1)}${rowIndex + 1}`;
+        const rowNumber = rowIndex + 1;
+        if (!row.values.length) return `<row r="${rowNumber}" ht="${row.height}" customHeight="1"/>`;
+        const cells = row.values.map((value, columnIndex) => {
+          const reference = `${spreadsheetColumn(columnIndex + 1)}${rowNumber}`;
+          const style = row.cellStyles ? row.cellStyles[columnIndex] : row.style;
+          const styleAttribute = style == null ? '' : ` s="${style}"`;
           if (typeof value === 'number' && Number.isFinite(value)) {
-            return `<c r="${reference}"><v>${value}</v></c>`;
+            return `<c r="${reference}"${styleAttribute}><v>${value}</v></c>`;
           }
           const text = String(value == null ? '' : value);
-          return `<c r="${reference}" t="inlineStr"><is><t xml:space="preserve">${xmlEscape(text)}</t></is></c>`;
+          return `<c r="${reference}"${styleAttribute} t="inlineStr"><is><t xml:space="preserve">${xmlEscape(text)}</t></is></c>`;
         }).join('');
-        return `<row r="${rowIndex + 1}">${cells}</row>`;
+        return `<row r="${rowNumber}" ht="${row.height}" customHeight="1">${cells}</row>`;
       }).join('');
+      const mergeXml = merges.length
+        ? `<mergeCells count="${merges.length}">${merges.map(ref => `<mergeCell ref="${ref}"/>`).join('')}</mergeCells>`
+        : '';
+      const orientation = columnCount > 5 ? 'landscape' : 'portrait';
 
       return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+          <sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>
+          <dimension ref="A1:${spreadsheetColumn(columnCount)}${rows.length}"/>
+          <sheetViews><sheetView showGridLines="0" workbookViewId="0"><pane ySplit="2" topLeftCell="A3" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+          <sheetFormatPr defaultRowHeight="23"/>
+          <cols>${columnsXml}</cols>
           <sheetData>${sheetRows}</sheetData>
+          ${mergeXml}
+          <pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>
+          <pageSetup orientation="${orientation}" fitToWidth="1" fitToHeight="0" paperSize="9"/>
         </worksheet>`;
+    }
+
+    function workbookStylesXml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+          <fonts count="5">
+            <font><sz val="11"/><name val="Calibri"/><color rgb="FF203756"/></font>
+            <font><b/><sz val="20"/><name val="Calibri"/><color rgb="FFFFFFFF"/></font>
+            <font><i/><sz val="11"/><name val="Calibri"/><color rgb="FF526985"/></font>
+            <font><b/><sz val="13"/><name val="Calibri"/><color rgb="FF17345F"/></font>
+            <font><b/><sz val="11"/><name val="Calibri"/><color rgb="FFFFFFFF"/></font>
+          </fonts>
+          <fills count="6">
+            <fill><patternFill patternType="none"/></fill>
+            <fill><patternFill patternType="gray125"/></fill>
+            <fill><patternFill patternType="solid"><fgColor rgb="FF123B68"/><bgColor indexed="64"/></patternFill></fill>
+            <fill><patternFill patternType="solid"><fgColor rgb="FFD7E8FC"/><bgColor indexed="64"/></patternFill></fill>
+            <fill><patternFill patternType="solid"><fgColor rgb="FFEAF2FC"/><bgColor indexed="64"/></patternFill></fill>
+            <fill><patternFill patternType="solid"><fgColor rgb="FFF5F8FD"/><bgColor indexed="64"/></patternFill></fill>
+          </fills>
+          <borders count="2">
+            <border><left/><right/><top/><bottom/><diagonal/></border>
+            <border>
+              <left style="thin"><color rgb="FFB7C7DA"/></left>
+              <right style="thin"><color rgb="FFB7C7DA"/></right>
+              <top style="thin"><color rgb="FFB7C7DA"/></top>
+              <bottom style="thin"><color rgb="FFB7C7DA"/></bottom>
+              <diagonal/>
+            </border>
+          </borders>
+          <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+          <cellXfs count="13">
+            <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+            <xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+            <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+            <xf numFmtId="0" fontId="4" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+            <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center" wrapText="1"/></xf>
+          </cellXfs>
+          <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+        </styleSheet>`;
     }
 
     function crc32(bytes) {
@@ -2667,6 +3952,7 @@
             <Default Extension="xml" ContentType="application/xml"/>
             <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
             <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+            <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
           </Types>`],
         ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -2679,7 +3965,9 @@
         ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
             <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+            <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
           </Relationships>`],
+        ['xl/styles.xml', workbookStylesXml()],
         ['xl/worksheets/sheet1.xml', worksheetXml(report)]
       ];
       const localParts = [];
@@ -2774,8 +4062,10 @@
         hiddenElements.forEach(element => element.classList.remove('print-hidden'));
         document.body.classList.remove('printing');
         delete document.body.dataset.printTitle;
+        if (sectionId === 'analysisDetailSection') renderAnalysisDetailRows();
       };
       document.body.dataset.printTitle = title;
+      if (sectionId === 'analysisDetailSection') renderAnalysisDetailRows(true);
       document.body.classList.add('printing');
       window.addEventListener('afterprint', restore, { once: true });
       window.print();
@@ -2945,17 +4235,47 @@
     document.querySelectorAll('.app-nav [data-view]').forEach(button => button.addEventListener('click', () => {
       document.querySelectorAll('.app-nav [data-view]').forEach(item => item.classList.toggle('active', item === button));
       document.querySelectorAll('.app-view').forEach(view => view.classList.toggle('active', view.id === button.dataset.view));
-      document.getElementById('pageTitle').textContent = button.querySelector('.nav-label').textContent;
+      const isReport = button.dataset.view === 'reportView';
+      document.getElementById('pageTitle').textContent = isReport ? 'Analisis Presensi' : button.querySelector('.nav-label').textContent;
+      document.getElementById('pageBreadcrumb').textContent = isReport
+        ? 'Monitoring dan rekapitulasi kehadiran peserta magang / PKL'
+        : 'Monitoring kehadiran peserta magang / PKL';
+      document.getElementById('analysisRangeControls').classList.toggle('visible', isReport);
+      document.getElementById('appContent').classList.toggle('analysis-mode', isReport);
     }));
     document.getElementById('reportPeriod').addEventListener('change', () => {
       reportRange();
       renderReport(currentRecords);
+      renderAttendanceAnalysis(currentRecords);
     });
     ['reportFrom', 'reportTo'].forEach(id => document.getElementById(id).addEventListener('change', () => {
       document.getElementById('reportPeriod').value = 'custom';
       renderReport(currentRecords);
+      renderAttendanceAnalysis(currentRecords);
     }));
     document.getElementById('reportPerson').addEventListener('change', () => renderReport(currentRecords));
+    document.getElementById('analysisPerson').addEventListener('change', () => renderAttendanceAnalysis(currentRecords));
+    document.querySelectorAll('[data-trend-days]').forEach(button => button.addEventListener('click', () => {
+      currentTrendDays = Number(button.dataset.trendDays);
+      document.querySelectorAll('[data-trend-days]').forEach(item => {
+        const active = item === button;
+        item.classList.toggle('active', active);
+        item.setAttribute('aria-pressed', String(active));
+      });
+      renderAttendanceAnalysis(currentRecords);
+    }));
+    document.getElementById('analysisSearch').addEventListener('input', () => {
+      currentAnalysisPage = 1;
+      renderAnalysisDetailRows();
+    });
+    document.getElementById('analysisPrev').addEventListener('click', () => {
+      currentAnalysisPage = Math.max(1, currentAnalysisPage - 1);
+      renderAnalysisDetailRows();
+    });
+    document.getElementById('analysisNext').addEventListener('click', () => {
+      currentAnalysisPage++;
+      renderAnalysisDetailRows();
+    });
     document.getElementById('monitorRows').addEventListener('click', event => {
       const button = event.target.closest('[data-monitor-name]');
       if (button) showMonitorDetail(button.dataset.monitorName);
