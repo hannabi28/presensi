@@ -38,8 +38,9 @@ function doGet(e) {
       acc[header] = row[index];
       return acc;
     }, {});
-    if (arrivalIndex !== -1 && record.arrival instanceof Date) {
-      record.arrival = normalizeSheetTime(displayValues[rowIndex + 1][arrivalIndex]) || record.arrival;
+    if (arrivalIndex !== -1 && record.arrival) {
+      const displayedArrival = normalizeSheetTime(displayValues[rowIndex + 1][arrivalIndex]);
+      if (displayedArrival) record.arrival = displayedArrival;
     }
     record._row = rowIndex + 2;
     return record;

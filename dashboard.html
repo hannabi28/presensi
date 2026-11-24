@@ -2169,19 +2169,19 @@
           <div class="analysis-metrics">
             <article class="analysis-metric workdays">
               <span class="analysis-metric-icon">▦</span>
-              <div><small>Total Hari Kerja</small><strong id="analysisWorkdays">0 Hari</strong></div>
+              <div><small>Total Hari Kerja</small><strong id="analysisWorkdays">0 Orang</strong></div>
             </article>
             <article class="analysis-metric present">
               <span class="analysis-metric-icon">✓</span>
-              <div class="analysis-metric-content"><small>Hadir</small><div class="analysis-metric-value"><strong id="analysisPresent">0 Hari</strong><small class="analysis-metric-percent" id="analysisPresentPercent">0%</small></div><small class="analysis-metric-note" id="analysisLate">Terlambat: 0 hari</small></div>
+              <div class="analysis-metric-content"><small>Hadir</small><div class="analysis-metric-value"><strong id="analysisPresent">0 Orang</strong><small class="analysis-metric-percent" id="analysisPresentPercent">0%</small></div><small class="analysis-metric-note" id="analysisLate">Terlambat: 0 hari</small></div>
             </article>
             <article class="analysis-metric leave">
               <span class="analysis-metric-icon">◷</span>
-              <div class="analysis-metric-content"><small>Izin / Sakit</small><div class="analysis-metric-value"><strong id="analysisLeave">0 Hari</strong><small class="analysis-metric-percent" id="analysisLeavePercent">0%</small></div></div>
+              <div class="analysis-metric-content"><small>Izin / Sakit</small><div class="analysis-metric-value"><strong id="analysisLeave">0 Orang</strong><small class="analysis-metric-percent" id="analysisLeavePercent">0%</small></div></div>
             </article>
             <article class="analysis-metric absent">
               <span class="analysis-metric-icon">×</span>
-              <div class="analysis-metric-content"><small>Tidak Hadir</small><div class="analysis-metric-value"><strong id="analysisAbsent">0 Hari</strong><small class="analysis-metric-percent" id="analysisAbsentPercent">0%</small></div></div>
+              <div class="analysis-metric-content"><small>Tidak Hadir</small><div class="analysis-metric-value"><strong id="analysisAbsent">0 Orang</strong><small class="analysis-metric-percent" id="analysisAbsentPercent">0%</small></div></div>
             </article>
           </div>
 
@@ -3311,13 +3311,13 @@
       const total = presentCount + leaveCount + absentCount;
       const share = count => total ? count / total * 100 : 0;
 
-      document.getElementById('analysisWorkdays').textContent = `${total} Hari`;
-      document.getElementById('analysisPresent').textContent = `${presentCount} Hari`;
+      document.getElementById('analysisWorkdays').textContent = `${total} Orang`;
+      document.getElementById('analysisPresent').textContent = `${presentCount} Orang`;
       document.getElementById('analysisPresentPercent').textContent = `${share(presentCount).toFixed(1)}% ▲`;
       document.getElementById('analysisLate').textContent = `Terlambat: ${lateCount} hari`;
-      document.getElementById('analysisLeave').textContent = `${leaveCount} Hari`;
+      document.getElementById('analysisLeave').textContent = `${leaveCount} Orang`;
       document.getElementById('analysisLeavePercent').textContent = `${share(leaveCount).toFixed(1)}% ▲`;
-      document.getElementById('analysisAbsent').textContent = `${absentCount} Hari`;
+      document.getElementById('analysisAbsent').textContent = `${absentCount} Orang`;
       document.getElementById('analysisAbsentPercent').textContent = `${share(absentCount).toFixed(1)}% ▲`;
       document.getElementById('analysisRate').textContent = `${Math.round(share(presentCount))}%`;
 
@@ -3334,7 +3334,7 @@
       ].map(item => `
         <div class="analysis-summary-item">
           <span class="analysis-legend-dot" style="background:${item.color}"></span>
-          <span>${item.label}</span><strong>${item.count} Hari</strong>
+          <span>${item.label}</span><strong>${item.count} Orang</strong>
         </div>`).join('');
       const insight = total
         ? `Tingkat kehadiran peserta magang pada periode ini adalah ${share(presentCount).toFixed(1)}%.`
