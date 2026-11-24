@@ -26,15 +26,21 @@ function doGet(e) {
   }
 
   const sheet = getSheet();
-  const values = sheet.getDataRange().getValues();
+  const dataRange = sheet.getDataRange();
+  const values = dataRange.getValues();
+  const displayValues = dataRange.getDisplayValues();
   if (values.length <= 1) return json({ ok: true, records: [] });
 
   const headers = values.shift();
+  const arrivalIndex = headers.indexOf('arrival');
   const records = values.map((row, rowIndex) => {
     const record = headers.reduce((acc, header, index) => {
       acc[header] = row[index];
       return acc;
     }, {});
+    if (arrivalIndex !== -1 && record.arrival instanceof Date) {
+      record.arrival = normalizeSheetTime(displayValues[rowIndex + 1][arrivalIndex]) || record.arrival;
+    }
     record._row = rowIndex + 2;
     return record;
   }).map(record => {
@@ -46,6 +52,20 @@ function doGet(e) {
   });
 
   return json({ ok: true, records: records });
+}
+
+function normalizeSheetTime(value) {
+  const match = String(value || '').match(/(?:^|\s)(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?\s*$/i);
+  if (!match) return '';
+  let hour = Number(match[1]);
+  if (match[3]) {
+    const meridiem = match[3].toUpperCase();
+    if (hour < 1 || hour > 12) return '';
+    if (meridiem === 'AM' && hour === 12) hour = 0;
+    if (meridiem === 'PM' && hour !== 12) hour += 12;
+  }
+  if (hour > 23 || Number(match[2]) > 59) return '';
+  return `${String(hour).padStart(2, '0')}:${match[2]}`;
 }
 
 function doPost(event) {
@@ -86,6 +106,7 @@ function doPost(event) {
       row[10] = sheet.getRange(rowNumber, 11).getValue();
       row[12] = sheet.getRange(rowNumber, 13).getValue();
     }
+    sheet.getRange(rowNumber, 8).setNumberFormat('@');
     sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
     rowWritten = true;

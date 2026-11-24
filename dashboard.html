@@ -2153,7 +2153,7 @@
           </div>
           <div class="app-table-wrap">
             <table class="app-table">
-              <thead><tr><th>Nama</th><th>Waktu Masuk</th><th>Waktu Keluar</th><th>Detail</th></tr></thead>
+              <thead><tr><th>Nama</th><th>Waktu Masuk (WITA)</th><th>Waktu Keluar (WITA)</th><th>Detail</th></tr></thead>
               <tbody id="todayRows"></tbody>
             </table>
           </div>
@@ -2230,7 +2230,7 @@
             </div>
             <div class="analysis-table-wrap">
               <table class="analysis-table">
-                <thead><tr><th>No</th><th>Nama</th><th>Waktu Masuk</th><th>Waktu Keluar</th><th>Status</th><th>Keterangan</th></tr></thead>
+                <thead><tr><th>No</th><th>Nama</th><th>Waktu Masuk (WITA)</th><th>Waktu Keluar (WITA)</th><th>Status</th><th>Keterangan</th></tr></thead>
                 <tbody id="analysisDetailRows"></tbody>
               </table>
             </div>
@@ -2256,7 +2256,7 @@
           </div>
           <div class="app-table-wrap">
             <table class="app-table">
-              <thead><tr><th>Tanggal</th><th>Nama</th><th>Waktu Masuk</th><th>Waktu Keluar</th><th>Durasi Terlambat</th><th>Durasi Pulang Cepat</th><th>Durasi Kerja</th><th>Izin</th><th>Bukti Pendukung</th></tr></thead>
+              <thead><tr><th>Tanggal</th><th>Nama</th><th>Waktu Masuk (WITA)</th><th>Waktu Keluar (WITA)</th><th>Durasi Terlambat</th><th>Durasi Pulang Cepat</th><th>Durasi Kerja</th><th>Izin</th><th>Bukti Pendukung</th></tr></thead>
               <tbody id="reportRows"></tbody>
             </table>
           </div>
@@ -2468,7 +2468,7 @@
           <thead>
             <tr>
               <th>Foto / Bukti</th>
-              <th>Tanggal &amp; Jam</th>
+              <th>Tanggal &amp; Jam (WITA)</th>
               <th>Nama</th>
               <th>Jurusan / Prodi</th>
               <th>Jenis Absensi</th>
@@ -2505,7 +2505,7 @@
         <p id="monitorDetailSubtitle"></p>
         <div class="app-table-wrap">
           <table class="app-table">
-            <thead><tr><th>No</th><th>Tanggal</th><th>Waktu Masuk</th><th>Waktu Keluar</th><th>Terlambat</th><th>Pulang Cepat</th><th>Total</th><th>Flag</th></tr></thead>
+            <thead><tr><th>No</th><th>Tanggal</th><th>Waktu Masuk (WITA)</th><th>Waktu Keluar (WITA)</th><th>Terlambat</th><th>Pulang Cepat</th><th>Total</th><th>Flag</th></tr></thead>
             <tbody id="monitorDetailRows"></tbody>
           </table>
         </div>
@@ -2522,6 +2522,7 @@
     let currentAnalysisEntries = [];
     let currentAnalysisPage = 1;
     let currentTrendDays = 30;
+    const ARRIVAL_CUTOFF_MINUTES = 8 * 60 + 30;
 
     async function getRecords() {
       const response = await fetch(API_URL);
@@ -2708,10 +2709,10 @@
             if (checkInRecord) {
               const arrMins = parseTimeMinutes(checkInRecord.arrival || checkInRecord.createdAt);
               if (arrMins != null) {
-                if (arrMins > 8 * 60) {
-                  arrivalLateMinutes = arrMins - 8 * 60;
+                if (arrMins > ARRIVAL_CUTOFF_MINUTES) {
+                  arrivalLateMinutes = arrMins - ARRIVAL_CUTOFF_MINUTES;
                 } else if (['Terlambat', 'Hadir Terlambat'].includes(checkInRecord.status)) {
-                  arrivalLateMinutes = Math.max(1, arrMins - 8 * 60);
+                  arrivalLateMinutes = Math.max(1, arrMins - ARRIVAL_CUTOFF_MINUTES);
                 }
               } else if (['Terlambat', 'Hadir Terlambat'].includes(checkInRecord.status)) {
                 arrivalLateMinutes = 30;
@@ -2925,7 +2926,7 @@
             <thead>
               <tr>
                 <th>Tanggal</th>
-                <th>Jam</th>
+                <th>Jam (WITA)</th>
                 <th>Jenis Absensi</th>
                 <th>Keterangan</th>
                 <th>Status Check-out</th>
@@ -3038,8 +3039,7 @@
       });
 
       document.getElementById('rows').innerHTML = currentFilteredRecords.length ? currentFilteredRecords.map(record => {
-        const created = new Date(record.createdAt);
-        const time = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '-') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
+        const time = record.arrival ? formatTime(record.arrival) : (record.createdAt ? formatTime(record.createdAt) : '-');
         const statusClass = String(record.status || '').toLowerCase().replace(/\s+/g, '-');
         const dKey = dateKey(record.date);
         const pKey = `${String(record.name || '').trim()}\u0000${String(record.department || '').trim()}\u0000${dKey}`;
@@ -3199,7 +3199,7 @@
     function reportDayDetails(day) {
       const inTime = day.checkIn ? activityTime(day.checkIn) : '';
       const outTime = day.checkOut ? activityTime(day.checkOut) : '';
-      const lateMinutes = inTime ? Math.max(0, (parseTimeMinutes(inTime) || 0) - 8 * 60) : null;
+      const lateMinutes = inTime ? Math.max(0, (parseTimeMinutes(inTime) || 0) - ARRIVAL_CUTOFF_MINUTES) : null;
       const outMinutes = outTime ? parseTimeMinutes(outTime) : null;
       const earlyMinutes = outMinutes != null && outMinutes < 17 * 60 ? 17 * 60 - outMinutes : outMinutes != null ? 0 : null;
       const workMinutes = inTime && outTime ? minutesBetween(inTime, outTime) : null;
@@ -3266,11 +3266,11 @@
       const inTime = day.checkIn ? activityTime(day.checkIn) : '';
       const inMinutes = inTime ? parseTimeMinutes(inTime) : null;
       const isLate = ['terlambat', 'hadir terlambat'].includes(checkInStatus) ||
-        (!checkInStatus && inMinutes != null && inMinutes > 8 * 60);
+        (!checkInStatus && inMinutes != null && inMinutes > ARRIVAL_CUTOFF_MINUTES);
       if (isLate) {
         return {
           key: 'late',
-          explanation: day.checkIn.reason || `Waktu masuk ${inTime}; batas masuk 08:00`
+          explanation: day.checkIn.reason || `Waktu masuk ${inTime}; batas masuk 08:30`
         };
       }
 
@@ -3486,7 +3486,7 @@
       const rows = days.map(day => {
         const inTime = day.checkIn ? activityTime(day.checkIn) : '';
         const outTime = day.checkOut ? activityTime(day.checkOut) : '';
-        const lateMinutes = inTime ? Math.max(0, (parseTimeMinutes(inTime) || 0) - 8 * 60) : 0;
+        const lateMinutes = inTime ? Math.max(0, (parseTimeMinutes(inTime) || 0) - ARRIVAL_CUTOFF_MINUTES) : 0;
         const outMinutes = outTime ? parseTimeMinutes(outTime) : null;
         const earlyMinutes = outMinutes != null && outMinutes < 17 * 60 ? 17 * 60 - outMinutes : 0;
         const workTotal = inTime && outTime
@@ -3692,7 +3692,7 @@
         report.title = 'Laporan Detail Presensi Pegawai';
         report.subtitle = selectedReportSubtitle();
         addTable('Detail Presensi Pegawai', [
-          'Tanggal', 'Nama', 'Waktu Masuk', 'Waktu Keluar', 'Status', 'Keterangan'
+          'Tanggal', 'Nama', 'Waktu Masuk (WITA)', 'Waktu Keluar (WITA)', 'Status', 'Keterangan'
         ], entries.map(entry => [
           excelDateShort(entry.date), entry.name, entry.checkIn ? activityTime(entry.checkIn) : '-',
           entry.checkOut ? activityTime(entry.checkOut) : '-', labels[entry.key],
@@ -3702,7 +3702,7 @@
         report.title = 'Laporan Absensi Rinci';
         report.subtitle = selectedReportSubtitle();
         addTable('Laporan Absensi Rinci', [
-          'Tanggal', 'Nama', 'Waktu Masuk', 'Waktu Keluar', 'Durasi Terlambat',
+          'Tanggal', 'Nama', 'Waktu Masuk (WITA)', 'Waktu Keluar (WITA)', 'Durasi Terlambat',
           'Durasi Pulang Cepat', 'Durasi Kerja', 'Izin', 'Bukti Pendukung'
         ], currentReportDays.map(day => {
           const detail = reportDayDetails(day);
@@ -4278,8 +4278,7 @@
           }
         }
 
-        const created = new Date(record.createdAt);
-        const timeFormatted = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '-') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
+        const timeFormatted = record.arrival ? formatTime(record.arrival) : (record.createdAt ? formatTime(record.createdAt) : '-');
         const proofUrl = record.supportingDocument || record.proof || record.photo || '';
         const reasonText = ['Tidak Hadir', 'Ijin', 'Terlambat', 'Hadir Terlambat'].includes(record.status) ? (record.reason || '-') : '-';
 
@@ -4338,8 +4337,7 @@
             }
           }
 
-          const created = new Date(record.createdAt);
-          const timeFormatted = Number.isNaN(created.getTime()) ? (record.arrival ? formatTime(record.arrival) : '') : created.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar' });
+          const timeFormatted = record.arrival ? formatTime(record.arrival) : (record.createdAt ? formatTime(record.createdAt) : '');
           const proofUrl = record.supportingDocument || record.proof || record.photo || '';
           const reasonText = ['Tidak Hadir', 'Ijin', 'Terlambat', 'Hadir Terlambat'].includes(record.status) ? (record.reason || '') : '';
 
